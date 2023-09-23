@@ -73,12 +73,6 @@
 	body {
 		@apply bg-background text-foreground;
 	}
-	.fc {
-		@apply flex justify-center items-center flex-col;
-	}
-	.fr {
-		@apply flex justify-center items-center flex-row;
-	}
 	*::-webkit-scrollbar {
 		width: 0.5rem;
 	}
@@ -88,6 +82,12 @@
 	*::-webkit-scrollbar-thumb {
 		background: #a7a7a7;
 		border-radius: 0.5rem;
+	}
+	.fc {
+		@apply flex justify-center items-center flex-col;
+	}
+	.fr {
+		@apply flex justify-center items-center flex-row;
 	}
 }
 

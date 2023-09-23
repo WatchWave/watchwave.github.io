@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useStore } from '@/zustandStore';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
+import toast from 'react-hot-toast';
+import useRunOnce from '@/hooks/useRunOnce';
+import Review from '@/components/Review';
+import Movie from '@/components/Movie';
 
 const options = {
 	method: 'GET',
@@ -15,10 +19,24 @@ const options = {
 };
 
 const Watch = () => {
+	const main = useRef<HTMLDivElement>(null);
 	const { id, type } = useParams<{ id: string; type: string }>();
 	const [result, setResult] = useState<object>({});
+	const [reviews, setReviews] = useState<object>({});
+	const [recommedations, setRecommedations] = useState<object>({});
+	const [credits, setCredits] = useState<object>({});
+	const [keywords, setKeywords] = useState<object>({});
 	const { episode, setEpisode, season, setSeason } = useStore();
 	const [seasons, setSeasons] = useState<object>({});
+	const location = useLocation();
+
+	useEffect(() => {
+		main.current.scrollTo(0, 0);
+	}, [location]);
+
+	useEffect(() => {
+		console.log(result);
+	}, [result]);
 
 	useEffect(() => {
 		if (type === 'tv') return;
@@ -27,7 +45,31 @@ const Watch = () => {
 			.then((response) => response.json())
 			.then((response) => setResult(response))
 			.catch((err) => console.error(err));
-	}, []);
+
+		fetch(`https://api.themoviedb.org/3/movie/${id}/reviews?language=en-US`, options)
+			.then((response) => response.json())
+			.then((response) => setReviews(response))
+			.catch((err) => console.error(err));
+
+		fetch(`https://api.themoviedb.org/3/movie/${id}/recommendations?language=en-US`, options)
+			.then((response) => response.json())
+			.then((response) => setRecommedations(response))
+			.catch((err) => console.error(err));
+
+		fetch(`https://api.themoviedb.org/3/movie/${id}/credits?language=en-US`, options)
+			.then((response) => response.json())
+			.then((response) => setCredits(response))
+			.catch((err) => console.error(err));
+
+		fetch(`https://api.themoviedb.org/3/movie/${id}/keywords?language=en-US`, options)
+			.then((response) => response.json())
+			.then((response) => setKeywords(response))
+			.catch((err) => console.error(err));
+	}, [location]);
+
+	useEffect(() => {
+		document.title = `${result.title || result.name} | WatchWave`;
+	}, [result]);
 
 	useEffect(() => {
 		if (type === 'movie') return;
@@ -46,23 +88,24 @@ const Watch = () => {
 				setResult(response);
 			})
 			.catch((err) => console.error(err));
-	}, []);
+	}, [location]);
 
-	useEffect(() => {
-		console.log(seasons);
-	}, [seasons]);
+	useRunOnce({
+		fn: () => {
+			toast.success('Please use an adblocker like uBlock Origin to block ads on the video player.', {
+				position: 'bottom-center',
+				duration: 5000,
+			});
+		},
+	});
 
-	useEffect(() => {
-		console.log(result);
-	}, [result]);
-
-	const timeConvert = (n: number) => {
+	const timeConvert = (n: number): string => {
 		const num = n;
 		const hours = num / 60;
 		const rhours = Math.floor(hours);
 		const minutes = (hours - rhours) * 60;
-		const rminutes = Math.round(minutes);
-		return hours + ' h ' + rminutes + 'm';
+		const rminutes = Math.round(parseFloat(minutes.toString()));
+		return rhours + ' h ' + rminutes + 'm';
 	};
 
 	return (
@@ -70,11 +113,12 @@ const Watch = () => {
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.5 }}
+			ref={main}
 			className="w-screen h-screen overflow-x-hidden pb-20 pt-16 font-poppins gap-10"
 		>
 			<Navbar />
 			{type === 'movie' && (
-				<div className="w-screen h-screen px-20">
+				<div className="w-screen sm:px-20">
 					<iframe allowFullScreen={true} className="w-full aspect-video" src={`https://vidsrc.to/embed/movie/${id}`} />
 				</div>
 			)}
@@ -97,7 +141,7 @@ const Watch = () => {
 						}}
 					>
 						{Object.keys(seasons)
-							.sort()
+							.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
 							.map((ssn) => (
 								<div key={ssn} className="w-full text-left border-b-[1px]">
 									<p className="text-xl px-5 py-5">{ssn}</p>
@@ -126,12 +170,16 @@ const Watch = () => {
 			)}
 			{result && (
 				<div className="w-full fc mt-10 mb-10">
-					<div className="w-full max-w-6xl fc px-10 md:fr items-start gap-5">
-						<img className="rounded-xl" src={`https://image.tmdb.org/t/p/w200/${result.poster_path}`} alt="" />
+					<div className="w-full max-w-6xl fc px-5 sm:px-10 md:fr md:items-start gap-5 mb-20">
+						<img
+							className="rounded-xl max-w-[250px] aspect-[2/3] object-cover"
+							src={`https://image.tmdb.org/t/p/w400/${result.poster_path}`}
+							alt=""
+						/>
 						<div className="fc gap-2 items-start">
 							<h1 className="font-bold text-5xl">{result.title || result.name}</h1>
 							<p className="text-lg max-w-[50ch]">{result.overview}</p>
-							<ul className="grid grid-cols-2 gap-5 items-start mt-5">
+							<ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start mt-5">
 								{type === 'movie' && (
 									<>
 										<li className="fr justify-start gap-3">
@@ -142,17 +190,58 @@ const Watch = () => {
 											<div className="font-bold">Runtime:</div>
 											<div>{timeConvert(result.runtime)}</div>
 										</li>
+										<li className="fr items-start gap-3">
+											<div className="font-bold">Cast:</div>
+											<div>
+												{credits.cast &&
+													credits.cast
+														.slice(0, 5)
+														.map((cast: any) => cast.name)
+														.join(', ')}
+											</div>
+										</li>
 									</>
 								)}
-								<li className="fr justify-start gap-3">
+								<li className="fr justify-start items-start gap-3">
 									<div className="font-bold">Genres</div>
-									<div className="fr gap-2">
+									<div className="fr flex-wrap justify-start gap-2">
 										{result.genres && result.genres.map((genre: any, i: number) => <Badge key={i}>{genre.name}</Badge>)}
+									</div>
+								</li>
+								<li className="fr justify-start items-start gap-3 sm:col-span-2">
+									<div className="font-bold">Keywords</div>
+									<div className="fr flex-wrap justify-start gap-2">
+										{keywords.keywords &&
+											keywords.keywords.map((keyword: any, i: number) => (
+												<Badge variant={'outline'} key={i}>
+													{keyword.name}
+												</Badge>
+											))}
 									</div>
 								</li>
 							</ul>
 						</div>
 					</div>
+					{type === 'movie' && recommedations.page && (
+						<div className="w-full fc my-10 px-10">
+							<h3 className="font-bold text-3xl mb-5">More Like This</h3>
+							<div className="grid grid-cols-2 md:grid-cols-5 gap-3 flex-wrap md:flex-nowrap">
+								{recommedations.results.slice(0, 5).map((result: object) => (
+									<Movie key={result.id + result.media_type} result={result} />
+								))}
+							</div>
+						</div>
+					)}
+					{type === 'movie' && reviews.page && (
+						<div className="w-full fc my-10 px-10">
+							<h3 className="font-bold text-3xl mb-5">Reviews</h3>
+							<div className="fr flex-wrap gap-10">
+								{reviews.results.map((review: object) => (
+									<Review key={review.id} review={review} />
+								))}
+							</div>
+						</div>
+					)}
 				</div>
 			)}
 			<Footer />

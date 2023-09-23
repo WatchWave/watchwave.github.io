@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { useStore } from '@/zustandStore';
 import { Button } from '@/components/ui/button';
@@ -16,23 +16,29 @@ const options = {
 };
 
 const Search = () => {
+	const location = useLocation();
 	const navigate = useNavigate();
 	const { query } = useParams();
 	const { search, setSearch, searchResults, setSearchResults } = useStore();
-	const handleSearch = () => {
+	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		if (!search) return;
 		navigate(`/search/${encodeURI(search).replace('.', '%2E')}`);
 	};
 
 	useEffect(() => {
 		setSearch(query!);
-		console.log(searchResults);
 		if (!query) return;
-
+		setSearchResults({});
 		fetch(`https://api.themoviedb.org/3/search/multi?query=${query}&include_adult=false&language=en-US&page=1`, options)
 			.then((response) => response.json())
-			.then((response) => setSearchResults(response))
+			.then((response) => setSearchResults({ ...response, results: response.results.filter((result: any) => result.media_type !== 'person') }))
 			.catch((err) => console.error(err));
-	}, []);
+
+		return () => {
+			setSearchResults({});
+		};
+	}, [location]);
 
 	const container = {
 		hidden: { opacity: 0 },
@@ -41,10 +47,6 @@ const Search = () => {
 			transition: { staggerChildren: 0.1, delayChildren: 0.04 * i },
 		}),
 	};
-
-	useEffect(() => {
-		console.log(searchResults);
-	}, [searchResults]);
 
 	const loadNextPage = () => {
 		if (!query) return;
@@ -68,7 +70,7 @@ const Search = () => {
 			<div className="max-w-6xl px-10 w-full fc relative gap-4">
 				<h1 className="font-poppins font-bold text-6xl md:text-9xl">Search</h1>
 				<form onSubmit={handleSearch} className="w-full max-w-4xl fr gap-3">
-					<Input value={search} onChange={(e) => setSearch(e.target.value)} />
+					<Input defaultValue={search} onChange={(e) => setSearch(e.target.value)} />
 					<Button type="submit">Search</Button>
 				</form>
 			</div>
@@ -79,9 +81,12 @@ const Search = () => {
 					animate="visible"
 					className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-10 max-w-6xl mt-10 px-10"
 				>
-					{searchResults.results.map((result: any) => (
-						<Movie key={result.id} result={result} />
-					))}
+					{/* sort by popularity */}
+					{searchResults.results
+						.sort((a: unknown, b: unknown) => b.popularity - a.popularity)
+						.map((result: any) => (
+							<Movie key={result.id + result.media_type} result={result} />
+						))}
 				</motion.div>
 			)}
 			{searchResults.results?.length === 0 && (

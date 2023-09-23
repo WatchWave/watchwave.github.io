@@ -2,40 +2,69 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Home from '@/routes/Home';
 import Watch from '@/routes/Watch';
 import Search from '@/routes/Search';
-import { useStore } from '@/zustandStore';
-import { useEffect } from 'react';
 import Error from './routes/Error';
+import { Toaster } from 'react-hot-toast';
+import Palette from './components/Palette';
 const App = () => {
-	const { searchResults, search } = useStore();
-	useEffect(() => {
-		console.log(searchResults);
-		console.log(search);
-	}, [searchResults]);
-
-	const BrowserRouter = createBrowserRouter([
+	const Router = createBrowserRouter([
 		{
 			path: '/',
-			element: <Home />,
+
+			element: (
+				<>
+					<Palette />
+					<Home />
+				</>
+			),
 		},
 		{
 			path: '/watch/:type/:id',
-			element: <Watch />,
+
+			element: (
+				<>
+					<Palette />
+					<Watch />
+				</>
+			),
 		},
 		{
 			path: '/search/',
-			element: <Search />,
+
+			element: (
+				<>
+					<Palette />
+					<Search />
+				</>
+			),
 		},
 		{
 			path: '/search/:query',
-			element: <Search />,
+
+			element: (
+				<>
+					<Palette />
+					<Search />
+				</>
+			),
 		},
 		{
 			path: '*',
-			element: <Error />,
+
+			element: (
+				<>
+					<Palette />
+					<Error />
+				</>
+			),
 		},
 	]);
 
-	return <RouterProvider router={BrowserRouter} />;
+	return (
+		<>
+			<Toaster />
+			<RouterProvider router={Router} />
+		</>
+	);
 };
 
 export default App;

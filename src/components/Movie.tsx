@@ -4,7 +4,7 @@ import { FiFilm } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { Badge } from './ui/badge';
 
-const Movie = ({ result }: any[]) => {
+const Movie = ({ result, disabled }: { result: any[]; disabled?: boolean }) => {
 	const child = {
 		visible: {
 			opacity: 1,
@@ -33,23 +33,25 @@ const Movie = ({ result }: any[]) => {
 					<div className="relative group w-full">
 						{result.poster_path ? (
 							<img
-								className="rounded-xl aspect-[2/3] w-full object-cover shadow-2xl"
+								className="rounded-xl aspect-[2/3] w-full object-cover shadow-2xl max-w-[250px]"
 								src={`https://image.tmdb.org/t/p/w400${result.poster_path}`}
 								alt={result.title}
 							/>
 						) : (
-							<div className="w-full aspect-[2/3] rounded-xl fc bg-[hsl(var(--secondary))]">
-								<FiFilm className="text-[hsl(var(--primary))] text-5xl" />
+							<div className="w-full aspect-[2/3] rounded-xl fc bg-secondary">
+								<FiFilm className="text-primary text-5xl" />
 							</div>
 						)}
-						<div className="absolute bg-black group-hover:opacity-100 opacity-0 bg-opacity-50 rounded-xl transition-opacity inset-0 fc">
-							<BsFillPlayCircleFill className="mix-blend-difference rounded-full text-5xl" />
-						</div>
+						{!disabled && (
+							<div className="absolute bg-black group-hover:opacity-100 opacity-0 bg-opacity-50 rounded-xl transition-opacity inset-0 fc">
+								<BsFillPlayCircleFill className="mix-blend-difference rounded-full text-5xl" />
+							</div>
+						)}
 					</div>
 					<div className="fc gap-3 w-full h-full items-start justify-between">
 						<p
 							className={`font-bold w-full text-sm sm:text-base md:text-lg font-poppins text-left ${
-								!result.title && !result.original_name && 'text-[hsl(var(--secondary))]'
+								!result.title && !result.original_name && 'text-secondary'
 							}`}
 						>
 							{result.title || result.original_name || 'No Title'}
