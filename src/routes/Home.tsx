@@ -5,9 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
+import useRunOnce from '@/hooks/useRunOnce';
 const Home = () => {
+	// Use the search query from the URL to set the search state
 	const navigate = useNavigate();
-	const { search, setSearch } = useStore();
+	const { search, setSearch, popups } = useStore();
 	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		if (!search) return;
@@ -18,6 +21,36 @@ const Home = () => {
 		setSearch('');
 	}, []);
 
+	useRunOnce({
+		fn: () => {
+			if (popups)
+				toast.custom(
+					(t) => {
+						console.log(t);
+						return (
+							<div
+								className={`${
+									t.visible ? 'animate-enter' : 'animate-leave'
+								} max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black bg-secondary ring-opacity-5 px-5 py-3`}
+							>
+								<div className="fr justify-between gap-3">
+									<div>{t.icon && <>{t.icon}</>}</div>
+									<div className="rounded-lg text-sm font-semibold overflow-hidden">
+										Try pressing ctrl or cmd + k to open the palette!
+									</div>
+								</div>
+							</div>
+						);
+					},
+					{
+						position: 'bottom-right',
+						duration: 5000,
+						icon: '🎨',
+					}
+				);
+		},
+	});
+
 	return (
 		<motion.div
 			initial={{ opacity: 0 }}
@@ -25,12 +58,12 @@ const Home = () => {
 			transition={{ duration: 0.5 }}
 			className="fc w-screen h-screen overflow-x-hidden relative select-none"
 		>
-			<div className="absolute inset-0 -z-10 bg-[url(/bg.webp)] bg-cover bg-no-repeat mix-blend-luminosity opacity-[15%]" />
+			<div className="absolute inset-0 -z-10 bg-[url(/bg-light.webp)] opacity-60 dark:bg-[url(/bg-dark.webp)] bg-cover bg-no-repeat" />
 			<Navbar />
 			<div className="max-w-6xl w-full fc relative gap-4 px-10">
 				<h1 className="font-poppins font-bold fc sm:fr gap-1">
 					<motion.svg
-						className="sm:h-[clamp(36px,_9vw_,130px)] sm:w-[clamp(36px,_9vw_,130px)] md:h-[130px] w-full h-full stroke-white"
+						className="sm:h-[clamp(36px,_9vw_,130px)] sm:w-[clamp(36px,_9vw_,130px)] md:h-[130px] w-full h-full dark:stroke-white stroke-black"
 						width="90"
 						height="81"
 						viewBox="0 0 90 81"

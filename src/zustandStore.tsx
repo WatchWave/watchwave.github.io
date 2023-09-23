@@ -1,23 +1,28 @@
 import { create } from 'zustand';
+import { SearchResultsProps } from './types';
 
 interface AppState {
 	search: string;
 	setSearch: (search: string) => void;
-	searchResults: unknown;
-	setSearchResults: (searchResults: unknown) => void;
+	searchResults: SearchResultsProps | null;
+	setSearchResults: (searchResults: SearchResultsProps | null) => void;
 	episode: number | null;
 	setEpisode: (episode: number | null) => void;
 	season: number | null;
 	setSeason: (season: number | null) => void;
+	popups: boolean;
+	setPopups: (popups: boolean) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
 	search: '',
 	setSearch: (search: string) => set({ search }),
-	searchResults: {},
-	setSearchResults: (searchResults: unknown) => set({ searchResults }),
+	searchResults: null,
+	setSearchResults: (searchResults: SearchResultsProps | null) => set({ searchResults }),
 	episode: null,
 	setEpisode: (episode) => set({ episode }),
 	season: null,
 	setSeason: (season) => set({ season }),
+	popups: true,
+	setPopups: (popups) => set({ popups }),
 }));

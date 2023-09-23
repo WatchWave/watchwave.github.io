@@ -5,6 +5,8 @@ import Search from '@/routes/Search';
 import Error from './routes/Error';
 import { Toaster } from 'react-hot-toast';
 import Palette from './components/Palette';
+import WatchTV from './routes/WatchTV';
+import WatchMovie from './routes/WatchMovie';
 const App = () => {
 	const Router = createBrowserRouter([
 		{
@@ -18,17 +20,26 @@ const App = () => {
 			),
 		},
 		{
-			path: '/watch/:type/:id',
+			path: '/watch/tv/:id',
 
 			element: (
 				<>
 					<Palette />
-					<Watch />
+					<WatchTV />
 				</>
 			),
 		},
 		{
-			path: '/search/',
+			path: '/watch/movie/:id',
+			element: (
+				<>
+					<Palette />
+					<WatchMovie />
+				</>
+			),
+		},
+		{
+			path: '/search/:query',
 
 			element: (
 				<>
@@ -38,7 +49,7 @@ const App = () => {
 			),
 		},
 		{
-			path: '/search/:query',
+			path: '/search/',
 
 			element: (
 				<>

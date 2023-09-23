@@ -94,11 +94,62 @@
 /* style text select */
 
 *::selection {
-	background: white;
-	color: black;
+	background: black;
+	color: white;
+}
+
+@media (prefers-color-scheme: dark) {
+	*::selection {
+		background: white;
+		color: black;
+	}
 }
 
 body,
 html {
 	overscroll-behavior-x: none;
+}
+
+@keyframes enter {
+	0% {
+		transform: scale(0.9);
+		opacity: 0;
+	}
+
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+.animate-enter {
+	animation: enter 0.2s ease-out;
+}
+
+@keyframes leave {
+	0% {
+		transform: scale(1);
+		opacity: 1;
+	}
+
+	to {
+		transform: scale(0.9);
+		opacity: 0;
+	}
+}
+
+.animate-leave {
+	animation: leave 0.15s ease-in forwards;
+}
+
+@keyframes enter {
+	0% {
+		transform: scale(0.9);
+		opacity: 0;
+	}
+
+	to {
+		transform: scale(1);
+		opacity: 1;
+	}
 }

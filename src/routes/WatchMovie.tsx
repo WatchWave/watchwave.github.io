@@ -10,14 +10,13 @@ import useRunOnce from '@/hooks/useRunOnce';
 import Review from '@/components/Review';
 import Movie from '@/components/Movie';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
+
 import {
 	genresProps,
 	keywordsProps,
 	castProps,
 	creditsProps,
 	detailsProps,
-	episodeProps,
-	seasonsProps,
 	keywordProps,
 	reviewProps,
 	reviewsProps,
@@ -36,35 +35,26 @@ const options = {
 	},
 };
 
-const Watch = () => {
+const WatchMovie = () => {
 	const main = useRef<HTMLDivElement>(null);
-	const { id, type } = useParams<{ id: string; type: string }>();
-	const temp = type === 'movie' ? 1 : 'movie';
+	const { id } = useParams<{ id: string }>();
 
-	type resultType = typeof temp extends number ? detailsProps : episodeProps;
-
-	const [result, setResult] = useState<resultType | null>(null);
+	const [result, setResult] = useState<detailsProps | null>(null);
 	const [reviews, setReviews] = useState<reviewsProps | null>(null);
 	const [recommedations, setRecommedations] = useState<recommendationsProps | null>(null);
 	const [credits, setCredits] = useState<creditsProps | null>(null);
 	const [keywords, setKeywords] = useState<keywordsProps | null>(null);
 	const [videos, setVideos] = useState<videosProps | null>(null);
 	const [imdbID, setImdbID] = useState<string | null>(null);
-	const { episode, setEpisode, season, setSeason, popups } = useStore();
-	const [seasons, setSeasons] = useState<seasonsProps>({});
 	const location = useLocation();
+
+	const { popups } = useStore();
 
 	useEffect(() => {
 		main.current?.scrollTo(0, 0);
 	}, [location]);
 
 	useEffect(() => {
-		console.log(result);
-	}, [result]);
-
-	useEffect(() => {
-		if (type === 'tv') return;
-
 		fetch(`https://api.themoviedb.org/3/movie/${id}?language=en-US`, options)
 			.then((response) => response.json())
 			.then((response) => setResult(response))
@@ -100,34 +90,14 @@ const Watch = () => {
 	}, [location]);
 
 	useEffect(() => {
-		document.title = `${result?.title || result?.name} | WatchWave`;
+		document.title = `${result?.title} | WatchWave`;
 	}, [result]);
-
-	useEffect(() => {
-		if (type === 'movie') return;
-
-		fetch(`https://api.themoviedb.org/3/tv/${id}?language=en-US`, options)
-			.then((response) => response.json())
-			.then((response) => {
-				for (let i = 1; i <= response.number_of_seasons; i++) {
-					fetch(`https://api.themoviedb.org/3/tv/${id}/season/${i}?language=en-US`, options)
-						.then((response) => response.json())
-						.then((response) => {
-							setSeasons((seasons) => ({ ...seasons, ['Season ' + i]: { episodes: response.episodes } }));
-						})
-						.catch((err) => console.error(err));
-				}
-				setResult(response);
-			})
-			.catch((err) => console.error(err));
-	}, [location]);
 
 	useRunOnce({
 		fn: () => {
 			if (popups)
 				toast.custom(
 					(t) => {
-						console.log(t);
 						return (
 							<div
 								className={`${
@@ -171,76 +141,16 @@ const Watch = () => {
 			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 font-poppins gap-10"
 		>
 			<Navbar />
-			{type === 'movie' && (
-				<div className="w-screen sm:px-20">
-					<div className="w-full relative">
-						{result?.backdrop_path && (
-							<div className="w-full h-full scale-150 sm:scale-110 absolute -z-10 blur-2xl opacity-50">
-								<img className="w-full h-full" src={`https://image.tmdb.org/t/p/w400/${result.backdrop_path}`} />
-							</div>
-						)}
-						<iframe allowFullScreen={true} className="w-full aspect-video sm:rounded-2xl" src={`https://vidsrc.to/embed/movie/${id}`} />
-					</div>
-				</div>
-			)}
-			{type === 'tv' && (
-				<div className="w-screen h-[90vh] md:fr fc mb-10 sm:px-10 relative">
+			<div className="w-screen sm:px-20">
+				<div className="w-full relative">
 					{result?.backdrop_path && (
-						<div className="w-full h-[90vh] scale-150 absolute -z-10 blur-2xl opacity-50">
+						<div className="w-full h-full scale-150 sm:scale-110 absolute -z-10 blur-2xl opacity-50">
 							<img className="w-full h-full" src={`https://image.tmdb.org/t/p/w400/${result.backdrop_path}`} />
 						</div>
 					)}
-					{episode !== null && season !== null ? (
-						<div className="w-full h-full bg-black fc sm:rounded-l-2xl">
-							<iframe
-								allowFullScreen={true}
-								className="w-full aspect-video"
-								src={`https://vidsrc.to/embed/tv/${id}/${season}/${episode}`}
-							/>
-						</div>
-					) : (
-						<div className="w-full h-full p-20 bg-black sm:rounded-l-2xl text-center fc text-zinc-300 text-2xl">
-							Please select an episode to watch
-						</div>
-					)}
-
-					<div
-						className="bg-black/80 sm:rounded-r-2xl backdrop-blur-xl w-full md:w-[initial] md:h-full md:border-l-[1px] overflow-auto"
-						style={{
-							userSelect: 'none',
-						}}
-					>
-						{Object.keys(seasons)
-							.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
-							.map((ssn) => (
-								<div key={ssn} className="w-full text-left border-b-[1px] text-white">
-									<p className="text-xl px-5 py-5">{ssn}</p>
-									{seasons[ssn].episodes.map((ep: episodeProps) => {
-										const { episode_number, season_number, name } = ep;
-										return (
-											<div
-												key={episode_number}
-												onClick={() => {
-													setEpisode(episode_number);
-													setSeason(season_number);
-												}}
-												className="fr justify-start px-5 py-3 border-y-[1px] transition-all hover:bg-black cursor-pointer"
-											>
-												<p className="text-sm">
-													<span className="font-bold">
-														Episode {episode_number}
-														{!name.toLowerCase().includes('episode') ? ':' : ''}{' '}
-													</span>
-													{!name.toLowerCase().includes('episode') && name}
-												</p>
-											</div>
-										);
-									})}
-								</div>
-							))}
-					</div>
+					<iframe allowFullScreen={true} className="w-full aspect-video sm:rounded-2xl" src={`https://vidsrc.to/embed/movie/${id}`} />
 				</div>
-			)}
+			</div>
 			{result && (
 				<div className="w-full fc mt-10 mb-10">
 					<div className="w-full max-w-7xl fc px-5 sm:px-10 md:fr md:items-start gap-5 mb-20">
@@ -252,9 +162,7 @@ const Watch = () => {
 						<div className="fc gap-2 items-start">
 							<h1 className="font-bold text-5xl">{result.title || result.name}</h1>
 							<ul className="inline-flex font-bold pb-3 gap-2 tracking-tight">
-								<li className="fr justify-start gap-3">
-									{result.first_air_date ? result.first_air_date.split('-')[0] : result.release_date.split('-')[0]}
-								</li>
+								<li className="fr justify-start gap-3">{result.release_date.split('-')[0]}</li>
 								<li>•</li>
 								<li className="fr justify-start gap-3">{result.runtime ? timeConvert(result.runtime) : 'N/A'}</li>
 								<li>•</li>
@@ -270,7 +178,7 @@ const Watch = () => {
 							</ul>
 							<p className="text-lg max-w-[50ch]">{result.overview}</p>
 							<ul className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-start mt-5">
-								{type === 'movie' && (
+								{
 									<>
 										<li className="fr justify-start gap-3">
 											<div className="font-bold">Release Date:</div>
@@ -291,14 +199,14 @@ const Watch = () => {
 											</div>
 										</li>
 									</>
-								)}
+								}
 								<li className="fr justify-start items-start gap-3">
 									<div className="font-bold">Genres</div>
 									<div className="fr flex-wrap justify-start gap-2">
 										{result.genres && result.genres.map((genre: genresProps, i: number) => <Badge key={i}>{genre.name}</Badge>)}
 									</div>
 								</li>
-								{keywords && keywords?.keywords.length !== 0 && (
+								{keywords?.keywords && keywords.keywords.length !== 0 && (
 									<li className="fr justify-start items-start gap-3 sm:col-span-2">
 										<div className="font-bold">Keywords</div>
 										<div className="fr flex-wrap justify-start gap-2">
@@ -313,7 +221,7 @@ const Watch = () => {
 							</ul>
 						</div>
 					</div>
-					{type === 'movie' && recommedations && recommedations.results.length !== 0 && (
+					{recommedations && recommedations.results.length !== 0 && (
 						<div className="w-full fc my-10 px-10">
 							<h3 className="font-bold text-3xl mb-5">More Like This</h3>
 							<div className="grid grid-cols-2 md:grid-cols-5 gap-3 flex-wrap md:flex-nowrap">
@@ -329,7 +237,7 @@ const Watch = () => {
 							</div>
 						</div>
 					)}
-					{type === 'movie' && videos && videos.results.length !== 0 && (
+					{videos && videos.results.length !== 0 && (
 						<div className="w-full fc px-10 my-10">
 							<h3 className="font-bold text-3xl mb-5">Trailers</h3>
 							<div className="w-full fr gap-3">
@@ -342,7 +250,7 @@ const Watch = () => {
 							</div>
 						</div>
 					)}
-					{type === 'movie' && reviews && reviews.results.length !== 0 && (
+					{reviews && reviews.results.length !== 0 && (
 						<div className="w-full fc my-10 px-10">
 							<h3 className="font-bold text-3xl mb-5">Reviews</h3>
 							<div className="fr items-start flex-wrap gap-10 w-full">
@@ -359,4 +267,4 @@ const Watch = () => {
 	);
 };
 
-export default Watch;
+export default WatchMovie;

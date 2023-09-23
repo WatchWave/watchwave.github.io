@@ -1,10 +1,21 @@
 import { Link } from 'react-router-dom';
-import { BsFillPlayCircleFill } from 'react-icons/bs';
 import { FiFilm } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { Badge } from './ui/badge';
+import { recommendationProps, SearchResultProps, suggestionProps } from '@/types';
+import { twMerge } from 'tailwind-merge';
 
-const Movie = ({ result, disabled }: { result: any[]; disabled?: boolean }) => {
+const Movie = ({
+	result,
+	disabled,
+	className,
+	type,
+}: {
+	result: recommendationProps | SearchResultProps | suggestionProps;
+	disabled?: boolean;
+	className?: string;
+	type?: string;
+}) => {
 	const child = {
 		visible: {
 			opacity: 1,
@@ -27,10 +38,24 @@ const Movie = ({ result, disabled }: { result: any[]; disabled?: boolean }) => {
 	};
 
 	return (
-		<motion.div className="w-full h-full" whileHover={{ scale: 1.05 }} viewport={{ once: true }} variants={child}>
-			<Link className="rounded-xl w-full h-full" to={`/watch/${result.media_type}/${result.id}`}>
+		<motion.div
+			className={`${twMerge('w-full h-full group relative', className)}`}
+			whileHover={{ scale: 1.05 }}
+			viewport={{ once: true }}
+			variants={child}
+		>
+			{result.poster_path && !disabled && (
+				<div className="absolute blur-2xl opacity-0 group-hover:opacity-70 inset-0 transition-opacity -z-10">
+					<img
+						className="rounded-xl aspect-[2/3] w-full object-cover max-w-[250px] scale-115"
+						src={`https://image.tmdb.org/t/p/w400${result.poster_path}`}
+						draggable={false}
+					/>
+				</div>
+			)}
+			<Link className="rounded-xl w-full h-full" to={`/watch/${result.media_type ? result.media_type : type}/${result.id}`}>
 				<div className="fc justify-start gap-2 w-full h-full">
-					<div className="relative group w-full">
+					<div className="relative fc group w-full">
 						{result.poster_path ? (
 							<img
 								className="rounded-xl aspect-[2/3] w-full object-cover shadow-2xl max-w-[250px]"
@@ -42,22 +67,21 @@ const Movie = ({ result, disabled }: { result: any[]; disabled?: boolean }) => {
 								<FiFilm className="text-primary text-5xl" />
 							</div>
 						)}
-						{!disabled && (
-							<div className="absolute bg-black group-hover:opacity-100 opacity-0 bg-opacity-50 rounded-xl transition-opacity inset-0 fc">
-								<BsFillPlayCircleFill className="mix-blend-difference rounded-full text-5xl" />
-							</div>
-						)}
 					</div>
 					<div className="fc gap-3 w-full h-full items-start justify-between">
 						<p
-							className={`font-bold w-full text-sm sm:text-base md:text-lg font-poppins text-left ${
+							className={`font-bold text-sm sm:text-base md:text-lg font-poppins text-left ${
 								!result.title && !result.original_name && 'text-secondary'
 							}`}
 						>
 							{result.title || result.original_name || 'No Title'}
 						</p>
 						<div className="fr justify-between w-full">
-							<Badge variant={'outline'}>{result.media_type.includes('t') ? 'TV' : 'Movie'}</Badge>
+							{
+								<Badge variant={'outline'}>
+									{result.media_type ? (result.media_type.includes('t') ? 'TV' : 'Movie') : type?.includes('t') ? 'TV' : 'Movie'}
+								</Badge>
+							}
 							<Badge variant={'outline'}>{result.vote_average && result.vote_average.toFixed(1)}</Badge>
 						</div>
 					</div>
