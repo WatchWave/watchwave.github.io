@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import useRunOnce from '@/hooks/useRunOnce';
 import Review from '@/components/Review';
 import Movie from '@/components/Movie';
+import { Link } from 'react-router-dom';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 
 import {
@@ -46,6 +47,7 @@ const WatchMovie = () => {
 	const [keywords, setKeywords] = useState<keywordsProps | null>(null);
 	const [videos, setVideos] = useState<videosProps | null>(null);
 	const [imdbID, setImdbID] = useState<string | null>(null);
+
 	const location = useLocation();
 
 	const { popups } = useStore();
@@ -135,8 +137,9 @@ const WatchMovie = () => {
 	return (
 		<motion.div
 			initial={{ opacity: 0 }}
+			exit={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5 }}
+			transition={{ duration: 0.3 }}
 			ref={main}
 			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 font-poppins gap-10"
 		>
@@ -144,18 +147,44 @@ const WatchMovie = () => {
 			<div className="w-screen sm:px-20">
 				<div className="w-full relative">
 					{result?.backdrop_path && (
-						<div className="w-full h-full scale-150 sm:scale-110 absolute -z-10 blur-2xl opacity-50">
+						<motion.div
+							initial={{ opacity: 0 }}
+							whileInView={{ opacity: 0.5 }}
+							className="w-full h-full scale-150 sm:scale-110 absolute -z-10 blur-2xl opacity-50"
+						>
 							<img className="w-full h-full" src={`https://image.tmdb.org/t/p/w400/${result.backdrop_path}`} />
-						</div>
+						</motion.div>
 					)}
-					<iframe allowFullScreen={true} className="w-full aspect-video sm:rounded-2xl" src={`https://vidsrc.to/embed/movie/${id}`} />
+
+					<motion.iframe
+						viewport={{
+							once: true,
+						}}
+						whileInView={{
+							filter: 'blur(0px)',
+							opacity: 1,
+							scale: 1,
+						}}
+						initial={{
+							filter: 'blur(10px)',
+							opacity: 0,
+							scale: 1.05,
+						}}
+						transition={{
+							duration: 1,
+							ease: 'easeInOut',
+						}}
+						allowFullScreen={true}
+						className="w-full aspect-video sm:rounded-2xl"
+						src={`https://vidsrc.to/embed/movie/${id}`}
+					/>
 				</div>
 			</div>
 			{result && (
 				<div className="w-full fc mt-10 mb-10">
 					<div className="w-full max-w-7xl fc px-5 sm:px-10 md:fr md:items-start gap-5 mb-20">
 						<img
-							className="rounded-xl max-w-[250px] aspect-[2/3] object-cover"
+							className="rounded-xl max-w-[250px] aspect-[2/3] object-cover z-10"
 							src={`https://image.tmdb.org/t/p/w400/${result.poster_path}`}
 							alt=""
 						/>
@@ -190,13 +219,14 @@ const WatchMovie = () => {
 										</li>
 										<li className="fr items-start gap-3">
 											<div className="font-bold">Cast:</div>
-											<div>
+											<p>
 												{credits?.cast &&
-													credits.cast
-														.slice(0, 5)
-														.map((cast: castProps) => cast.name)
-														.join(', ')}
-											</div>
+													credits.cast.slice(0, 5).map((cast: castProps, i: number) => (
+														<span key={cast.name} className="hover:underline underline-offset-2">
+															<Link to={`/actor/${cast.id}`}>{cast.name + (i !== 4 && ', ')}</Link>
+														</span>
+													))}
+											</p>
 										</li>
 									</>
 								}
@@ -240,7 +270,7 @@ const WatchMovie = () => {
 					{videos && videos.results.length !== 0 && (
 						<div className="w-full fc px-10 my-10">
 							<h3 className="font-bold text-3xl mb-5">Trailers</h3>
-							<div className="w-full fr gap-3">
+							<div className="w-full md:grid-cols-3 grid-cols-1 sm:grid-cols-2 grid gap-3">
 								{videos.results
 									.filter((video: videoProps) => video.site === 'YouTube' && video.type === 'Trailer')
 									.sort((a: videoProps, b: videoProps) => b.size - a.size)

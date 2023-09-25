@@ -123,8 +123,9 @@ const Search = () => {
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5 }}
-			className="w-screen h-screen fc justify-between pt-36 overflow-x-hidden"
+			exit={{ opacity: 0 }}
+			transition={{ duration: 0.3 }}
+			className="w-screen h-screen fc justify-between pt-36 overflow-x-hidden select-none"
 		>
 			<Navbar />
 			<div className="max-w-6xl px-10 w-full fc relative gap-4">
@@ -170,7 +171,7 @@ const Search = () => {
 				<>
 					{nowPlaying?.results.length !== 0 && <Slider type="movie" title="Now Playing" results={nowPlaying?.results} />}
 
-					{popular?.results.length !== 0 && <Slider type="movie" title="Now Playing" results={popular?.results} />}
+					{popular?.results.length !== 0 && <Slider type="movie" title="Popular" results={popular?.results} />}
 
 					{topRated?.results.length !== 0 && <Slider type="movie" title="Top Rated" results={topRated?.results} />}
 

@@ -4,7 +4,7 @@ import Logo from './Logo';
 const Navbar = () => {
 	return (
 		<nav
-			className="fr z-10 justify-between fixed top-0 h-16 bg-[hsl(var(--secondary))]/70 shadow-sm font-poppins w-screen backdrop-blur-2xl backdrop-filter"
+			className="fr z-50 justify-between fixed top-0 h-16 bg-[hsl(var(--secondary))]/70 shadow-sm font-poppins w-screen backdrop-blur-2xl backdrop-filter"
 			role="navigation"
 		>
 			<Link to="/" className="pl-8">

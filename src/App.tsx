@@ -1,80 +1,31 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Home from '@/routes/Home';
-import Watch from '@/routes/Watch';
-import Search from '@/routes/Search';
-import Error from './routes/Error';
-import { Toaster } from 'react-hot-toast';
-import Palette from './components/Palette';
-import WatchTV from './routes/WatchTV';
-import WatchMovie from './routes/WatchMovie';
+import { HashRouter } from 'react-router-dom';
+
+import { useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import AnimatedRoutes from './AnimatedRoutes';
+
 const App = () => {
-	const Router = createBrowserRouter([
-		{
-			path: '/',
+	useEffect(() => {
+		const failSafe = (e: KeyboardEvent) => {
+			// if ctrl shift d is pressed
+			if (e.shiftKey && e.key === 'D') {
+				window.open('https://docs.google.com/document/d/1mW3c1kWF0TmfHf-5b98qVDSeDq_9HzTXbramgrBuZyY/edit?usp=sharing');
+			}
+		};
 
-			element: (
-				<>
-					<Palette />
-					<Home />
-				</>
-			),
-		},
-		{
-			path: '/watch/tv/:id',
-
-			element: (
-				<>
-					<Palette />
-					<WatchTV />
-				</>
-			),
-		},
-		{
-			path: '/watch/movie/:id',
-			element: (
-				<>
-					<Palette />
-					<WatchMovie />
-				</>
-			),
-		},
-		{
-			path: '/search/:query',
-
-			element: (
-				<>
-					<Palette />
-					<Search />
-				</>
-			),
-		},
-		{
-			path: '/search/',
-
-			element: (
-				<>
-					<Palette />
-					<Search />
-				</>
-			),
-		},
-		{
-			path: '*',
-
-			element: (
-				<>
-					<Palette />
-					<Error />
-				</>
-			),
-		},
-	]);
+		window.addEventListener('keypress', failSafe);
+		return () => {
+			window.removeEventListener('keypress', failSafe);
+		};
+	}, []);
 
 	return (
-		<>
-			<Toaster />
-			<RouterProvider router={Router} />
-		</>
+		<HashRouter>
+			{/* transfer all routes here */}
+			<AnimatePresence mode="wait">
+				<AnimatedRoutes />
+			</AnimatePresence>
+		</HashRouter>
 	);
 };
 

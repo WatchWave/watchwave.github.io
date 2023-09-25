@@ -14,7 +14,7 @@ const Review = ({ review }: { review: reviewProps }) => {
 	}, []);
 
 	return (
-		<div key={review.id} className="fc p-10 bg-secondary rounded-xl">
+		<div key={review.id} className="fc p-7 bg-secondary rounded-xl">
 			<div className="fc gap-2 items-start">
 				<h5 className="font-bold text-xl fr gap-3">
 					{review.author_details.avatar_path && (

@@ -78,6 +78,16 @@ const Palette = () => {
 							setPopups(!popups);
 						},
 					},
+					{
+						id: 'toggletheme',
+						children: 'Toggle Theme',
+						icon: 'MoonIcon',
+						onClick: () => {
+							localStorage.setItem('vite-ui-theme', localStorage.getItem('vite-ui-theme') === 'dark' ? 'light' : 'dark');
+							document.documentElement.classList.remove(localStorage.getItem('vite-ui-theme') === 'dark' ? 'light' : 'dark');
+							document.documentElement.classList.add(localStorage.getItem('vite-ui-theme') === 'dark' ? 'dark' : 'light');
+						},
+					},
 				],
 			},
 			{

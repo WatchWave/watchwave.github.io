@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useStore } from '@/zustandStore';
 import Navbar from '@/components/Navbar';
@@ -9,7 +9,9 @@ import toast from 'react-hot-toast';
 import useRunOnce from '@/hooks/useRunOnce';
 import Review from '@/components/Review';
 import Movie from '@/components/Movie';
+import Video from '@/components/Video';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
+
 import {
 	TVShow,
 	episodeProps,
@@ -26,7 +28,6 @@ import {
 	genresProps,
 	reviewProps,
 } from '@/types';
-import Video from '@/components/Video';
 
 const options = {
 	method: 'GET',
@@ -61,9 +62,15 @@ const WatchTV = () => {
 	}, [result]);
 
 	useEffect(() => {
+		console.log(result);
+	}, [result]);
+
+	useEffect(() => {
 		fetch(`https://api.themoviedb.org/3/tv/${id}?language=en-US`, options)
 			.then((response) => response.json())
 			.then((response) => {
+				console.log(response);
+
 				for (let i = 1; i <= response.number_of_seasons; i++) {
 					fetch(`https://api.themoviedb.org/3/tv/${id}/season/${i}?language=en-US`, options)
 						.then((response) => response.json())
@@ -98,10 +105,7 @@ const WatchTV = () => {
 
 		fetch(`https://api.themoviedb.org/3/tv/${id}/keywords?language=en-US`, options)
 			.then((response) => response.json())
-			.then((response) => {
-				console.log(response);
-				setKeywords(response);
-			})
+			.then((response) => setKeywords(response))
 			.catch((err) => console.error(err));
 		fetch(`https://api.themoviedb.org/3/tv/${id}/external_ids?language=en-US`, options)
 			.then((response) => response.json())
@@ -147,43 +151,83 @@ const WatchTV = () => {
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5 }}
+			exit={{ opacity: 0 }}
+			transition={{ duration: 0.3 }}
 			ref={main}
 			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 font-poppins gap-10"
 		>
 			<Navbar />
 
-			<div className="w-screen h-[90vh] md:fr fc mb-10 sm:px-10 relative">
+			<motion.div
+				viewport={{
+					once: true,
+				}}
+				whileInView={{
+					filter: 'blur(0px)',
+					opacity: 1,
+					scale: 1,
+				}}
+				initial={{
+					filter: 'blur(10px)',
+					opacity: 0,
+					scale: 1.05,
+				}}
+				transition={{
+					duration: 1,
+					ease: 'easeInOut',
+				}}
+				className="w-screen h-[90vh] md:fr fc mb-10 sm:px-10 relative sm:gap-3"
+			>
 				{result?.backdrop_path && (
-					<div className="w-full h-[90vh] scale-150 absolute -z-10 blur-2xl opacity-50">
+					<motion.div
+						initial={{ opacity: 0 }}
+						whileInView={{ opacity: 0.5 }}
+						className="w-full h-[90vh] scale-125 absolute -z-10 blur-2xl opacity-50 pointer-events-none"
+					>
 						<img className="w-full h-full" src={`https://image.tmdb.org/t/p/w400/${result.backdrop_path}`} />
-					</div>
+					</motion.div>
 				)}
 				{episode !== null && season !== null ? (
-					<div className="w-full h-full bg-black fc sm:rounded-l-2xl">
+					<div className="w-full h-full bg-black fc md:rounded-l-2xl sm:rounded-2xl">
 						<iframe
 							allowFullScreen={true}
-							className="w-full aspect-video"
+							className="w-full aspect-video sm:rounded-2xl md:rounded-none"
 							src={`https://vidsrc.to/embed/tv/${id}/${season}/${episode}`}
 						/>
 					</div>
 				) : (
-					<div className="w-full h-full p-20 bg-black sm:rounded-l-2xl text-center fc text-zinc-300 text-2xl">
+					<div className="w-full h-full p-20 bg-black md:rounded-l-2xl sm:rounded-2xl text-center fc text-zinc-300 text-2xl">
 						Please select an episode to watch
 					</div>
 				)}
 
-				<div
-					className="bg-black/80 sm:rounded-r-2xl backdrop-blur-xl w-full md:w-[initial] md:h-full md:border-l-[1px] overflow-auto"
+				<motion.div
+					whileInView={{
+						opacity: 1,
+						filter: 'blur(0px)',
+					}}
+					initial={{
+						opacity: 0,
+						filter: 'blur(10px)',
+					}}
+					className="bg-black/80 sm:rounded-2xl md:rounded-r-2xl backdrop-blur-xl w-full md:w-[initial] md:h-full md:border-l-[1px] overflow-auto sm:min-w-[300px] sm:max-w-[350px]"
 					style={{
 						userSelect: 'none',
 					}}
 				>
 					{Object.keys(seasons)
 						.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
-						.map((ssn) => (
+						.map((ssn, i) => (
 							<div key={ssn} className="w-full text-left border-b-[1px] text-white">
-								<p className="text-xl px-5 py-5">{ssn}</p>
+								<div className="fr justify-start w-full gap-4 px-5 py-5">
+									<img
+										draggable={false}
+										className="max-w-[70px] h-auto rounded-xl"
+										src={`https://image.tmdb.org/t/p/w400/${result?.seasons[i].poster_path}`}
+										alt=""
+									/>
+									<p className="text-xl whitespace-nowrap">{ssn}</p>
+								</div>
 								{seasons[ssn].episodes.map((ep: episodeProps) => {
 									const { episode_number, season_number, name } = ep;
 									return (
@@ -193,7 +237,7 @@ const WatchTV = () => {
 												setEpisode(episode_number);
 												setSeason(season_number);
 											}}
-											className="fr justify-start px-5 py-3 border-y-[1px] transition-all hover:bg-black cursor-pointer"
+											className="fr justify-start px-5 py-3 border-y-[1px] transition-all dark:hover:bg-slate-900 cursor-pointer"
 										>
 											<p className="text-sm">
 												<span className="font-bold">
@@ -207,14 +251,14 @@ const WatchTV = () => {
 								})}
 							</div>
 						))}
-				</div>
-			</div>
+				</motion.div>
+			</motion.div>
 
 			{result && (
 				<div className="w-full fc mt-10 mb-10">
 					<div className="w-full max-w-7xl fc px-5 sm:px-10 md:fr md:items-start gap-5 mb-20">
 						<img
-							className="rounded-xl max-w-[250px] aspect-[2/3] object-cover"
+							className="rounded-xl max-w-[250px] aspect-[2/3] object-cover z-10"
 							src={`https://image.tmdb.org/t/p/w400/${result.poster_path}`}
 							alt=""
 						/>
@@ -252,13 +296,14 @@ const WatchTV = () => {
 									</li>
 									<li className="fr items-start gap-3">
 										<div className="font-bold">Cast:</div>
-										<div>
+										<p>
 											{credits?.cast &&
-												credits.cast
-													.slice(0, 5)
-													.map((cast: castProps) => cast.name)
-													.join(', ')}
-										</div>
+												credits.cast.slice(0, 5).map((cast: castProps, i: number) => (
+													<span key={cast.name} className="hover:underline underline-offset-2">
+														<Link to={`/actor/${cast.id}`}>{cast.name + (i !== 4 && ', ')}</Link>
+													</span>
+												))}
+										</p>
 									</li>
 								</>
 								<li className="fr justify-start items-start gap-3">
@@ -301,7 +346,7 @@ const WatchTV = () => {
 					{videos && videos.results.length !== 0 && (
 						<div className="w-full fc px-10 my-10">
 							<h3 className="font-bold text-3xl mb-5">Trailers</h3>
-							<div className="w-full fr gap-3">
+							<div className="w-full md:grid-cols-3 grid-cols-1 sm:grid-cols-2 grid gap-3">
 								{videos.results
 									.filter((video: videoProps) => video.site === 'YouTube' && video.type === 'Trailer')
 									.sort((a: videoProps, b: videoProps) => b.size - a.size)

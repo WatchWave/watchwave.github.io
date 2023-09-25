@@ -16,7 +16,12 @@ const Slider = ({ results, title, type }: { results: suggestionProps[] | undefin
 			<div className="w-full">
 				<h1 className="font-poppins font-bold text-4xl mb-10">{title}</h1>
 
-				<motion.div variants={container} initial="hidden" animate="visible" className="grid grid-cols-1 gap-5 sm:grid-cols-3 md:grid-cols-5">
+				<motion.div
+					variants={container}
+					initial="hidden"
+					animate="visible"
+					className="grid grid-cols-1 gap-14 sm:gap-5 sm:grid-cols-3 md:grid-cols-5"
+				>
 					{results?.map((result: suggestionProps) => (
 						<Movie type={type} key={result.id} result={result} />
 					))}
