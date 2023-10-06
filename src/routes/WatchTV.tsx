@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
 import { useStore } from '@/zustandStore';
-import Navbar from '@/components/Navbar';
+import { Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, ScrollShadow } from '@nextui-org/react';
 import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
 import toast from 'react-hot-toast';
@@ -11,7 +10,8 @@ import Review from '@/components/Review';
 import Movie from '@/components/Movie';
 import Video from '@/components/Video';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
-
+import Navigation from '@/components/Navbar';
+import ReactGA from 'react-ga4';
 import {
 	TVShow,
 	episodeProps,
@@ -28,6 +28,8 @@ import {
 	genresProps,
 	reviewProps,
 } from '@/types';
+import useRecordAnalytics from '@/hooks/useRecordAnalytics';
+import { BsChevronDown } from 'react-icons/bs';
 
 const options = {
 	method: 'GET',
@@ -49,27 +51,33 @@ const WatchTV = () => {
 	const [videos, setVideos] = useState<videosProps | null>(null);
 	const [imdbID, setImdbID] = useState<string | null>(null);
 
-	const { episode, setEpisode, season, setSeason, popups } = useStore();
+	const { episode, setEpisode, season, setSeason } = useStore();
 	const [seasons, setSeasons] = useState<seasonsProps>({});
 	const location = useLocation();
+	const [source, setSource] = useState('0');
 
 	useEffect(() => {
 		main.current?.scrollTo(0, 0);
 	}, [location]);
 
 	useEffect(() => {
-		document.title = `${result?.name} | WatchWave`;
+		if (result !== undefined) document.title = `${result?.name || result?.original_name} | WatchWave`;
 	}, [result]);
 
-	useEffect(() => {
-		console.log(result);
-	}, [result]);
+	useRecordAnalytics(location);
 
 	useEffect(() => {
 		fetch(`https://api.themoviedb.org/3/tv/${id}?language=en-US`, options)
 			.then((response) => response.json())
 			.then((response) => {
 				console.log(response);
+
+				ReactGA.event({
+					action: 'View',
+					category: 'TV',
+					label: response.name || response.original_name,
+				});
+				console.log(response.name || response.original_name);
 
 				for (let i = 1; i <= response.number_of_seasons; i++) {
 					fetch(`https://api.themoviedb.org/3/tv/${id}/season/${i}?language=en-US`, options)
@@ -81,11 +89,6 @@ const WatchTV = () => {
 				}
 				setResult(response);
 			})
-			.catch((err) => console.error(err));
-
-		fetch(`https://api.themoviedb.org/3/tv/${id}?language=en-US`, options)
-			.then((response) => response.json())
-			.then((response) => setResult(response))
 			.catch((err) => console.error(err));
 
 		fetch(`https://api.themoviedb.org/3/tv/${id}/reviews?language=en-US`, options)
@@ -117,16 +120,46 @@ const WatchTV = () => {
 			.catch((err) => console.error(err));
 	}, [location]);
 
+	useEffect(() => {
+		if (season !== undefined) {
+			const track = `${result?.name || result?.original_name}: Season ${season}`;
+			ReactGA.event({
+				action: 'View',
+				category: 'Season',
+				label: track,
+			});
+		}
+	}, [season]);
+
+	useEffect(() => {
+		if (episode !== null) {
+			// show name, episode number and then name
+			const track = `${result?.name || result?.original_name}: Ep${episode}: ${seasons[`Season ${season}`]?.episodes[episode - 1].name}`;
+			ReactGA.event({
+				action: 'View',
+				category: 'Episode',
+				// show name episode number and then name
+				label: track,
+			});
+		}
+	}, [episode]);
+
+	const sourceCollection = [
+		`https://vidsrc.to/embed/tv/${id}/${season}/${episode}`,
+		`https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${season}&e=${episode}`,
+		`https://vidsrc.me/embed/tv?tmdb=${id}&season=${season}&episode=${episode}&color=006FEE`,
+	];
+
 	useRunOnce({
 		fn: () => {
-			if (popups)
+			if (localStorage.popups === 'true')
 				toast.custom(
 					(t) => {
 						return (
 							<div
 								className={`${
 									t.visible ? 'animate-enter' : 'animate-leave'
-								} max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black bg-secondary ring-opacity-5 px-5 py-3`}
+								} max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black bg-default-50 text-default-foreground ring-opacity-5 px-5 py-3`}
 							>
 								<div className="fr justify-between">
 									<div className="rounded-lg text-sm font-semibold overflow-hidden">
@@ -140,7 +173,7 @@ const WatchTV = () => {
 						);
 					},
 					{
-						position: 'bottom-center',
+						position: 'top-center',
 						duration: 5000,
 					}
 				);
@@ -154,9 +187,9 @@ const WatchTV = () => {
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}
 			ref={main}
-			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 font-poppins gap-10"
+			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 font-inter gap-10 bg-background text-default-foreground"
 		>
-			<Navbar />
+			<Navigation />
 
 			<motion.div
 				viewport={{
@@ -182,9 +215,10 @@ const WatchTV = () => {
 					<motion.div
 						initial={{ opacity: 0 }}
 						whileInView={{ opacity: 0.5 }}
+						viewport={{ once: true }}
 						className="w-full h-[90vh] scale-125 absolute -z-10 blur-2xl opacity-50 pointer-events-none"
 					>
-						<img className="w-full h-full" src={`https://image.tmdb.org/t/p/w400/${result.backdrop_path}`} />
+						<img className="w-full h-full object-cover" src={`https://image.tmdb.org/t/p/w400/${result.backdrop_path}`} />
 					</motion.div>
 				)}
 				{episode !== null && season !== null ? (
@@ -192,66 +226,83 @@ const WatchTV = () => {
 						<iframe
 							allowFullScreen={true}
 							className="w-full aspect-video sm:rounded-2xl md:rounded-none"
-							src={`https://vidsrc.to/embed/tv/${id}/${season}/${episode}`}
+							src={sourceCollection[source]}
 						/>
+						<div className="w-full fc py-4">
+							<Dropdown>
+								<DropdownTrigger>
+									<Button>
+										Source {parseInt(source) + 1} <BsChevronDown />
+									</Button>
+								</DropdownTrigger>
+								<DropdownMenu aria-label="Source Selection" onAction={(key) => setSource(key)}>
+									<DropdownItem key={0}>Source 1</DropdownItem>
+									<DropdownItem key={1}>Source 2</DropdownItem>
+									<DropdownItem key={2}>Source 3</DropdownItem>
+								</DropdownMenu>
+							</Dropdown>
+						</div>
 					</div>
 				) : (
-					<div className="w-full h-full p-20 bg-black md:rounded-l-2xl sm:rounded-2xl text-center fc text-zinc-300 text-2xl">
+					<div className="tracking-tighter w-full h-full p-20 bg-black md:rounded-l-2xl sm:rounded-2xl text-center fc text-zinc-300 text-2xl">
 						Please select an episode to watch
 					</div>
 				)}
-
-				<motion.div
-					whileInView={{
-						opacity: 1,
-						filter: 'blur(0px)',
-					}}
-					initial={{
-						opacity: 0,
-						filter: 'blur(10px)',
-					}}
-					className="bg-black/80 sm:rounded-2xl md:rounded-r-2xl backdrop-blur-xl w-full md:w-[initial] md:h-full md:border-l-[1px] overflow-auto sm:min-w-[300px] sm:max-w-[350px]"
-					style={{
-						userSelect: 'none',
-					}}
-				>
-					{Object.keys(seasons)
-						.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
-						.map((ssn, i) => (
-							<div key={ssn} className="w-full text-left border-b-[1px] text-white">
-								<div className="fr justify-start w-full gap-4 px-5 py-5">
-									<img
-										draggable={false}
-										className="max-w-[70px] h-auto rounded-xl"
-										src={`https://image.tmdb.org/t/p/w400/${result?.seasons[i].poster_path}`}
-										alt=""
-									/>
-									<p className="text-xl whitespace-nowrap">{ssn}</p>
-								</div>
-								{seasons[ssn].episodes.map((ep: episodeProps) => {
-									const { episode_number, season_number, name } = ep;
-									return (
-										<div
-											key={episode_number}
-											onClick={() => {
-												setEpisode(episode_number);
-												setSeason(season_number);
-											}}
-											className="fr justify-start px-5 py-3 border-y-[1px] transition-all dark:hover:bg-slate-900 cursor-pointer"
-										>
-											<p className="text-sm">
-												<span className="font-bold">
-													Episode {episode_number}
-													{!name.toLowerCase().includes('episode') ? ':' : ''}{' '}
-												</span>
-												{!name.toLowerCase().includes('episode') && name}
-											</p>
+				<div className="bg-default-50 h md:h-full sm:rounded-2xl md:rounded-r-2xl w-full md:w-auto min-h-[40vh] max-h-full">
+					<ScrollShadow className="md:min-w-[300px] md:max-w-[350px] h-full w-full md:w-auto" size={100}>
+						<motion.div
+							whileInView={{
+								opacity: 1,
+								filter: 'blur(0px)',
+							}}
+							initial={{
+								opacity: 0,
+								filter: 'blur(10px)',
+							}}
+							viewport={{ once: true }}
+						>
+							{Object.keys(seasons)
+								.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
+								.map((ssn, i) => (
+									<div key={ssn} className="w-full text-left border-b-[1px] border-foreground-200">
+										<div className="fr justify-start w-full gap-4 px-5 py-5">
+											<img
+												draggable={false}
+												className="max-w-[70px] h-auto rounded-xl"
+												src={`https://image.tmdb.org/t/p/w400/${result?.seasons[i].poster_path}`}
+												alt=""
+											/>
+											<p className="text-xl whitespace-nowrap font-bold tracking-tight">{ssn}</p>
 										</div>
-									);
-								})}
-							</div>
-						))}
-				</motion.div>
+										{seasons[ssn].episodes.map((ep: episodeProps) => {
+											const { episode_number, season_number, name } = ep;
+											return (
+												<div
+													key={episode_number}
+													onClick={() => {
+														setEpisode(episode_number);
+														setSeason(season_number);
+													}}
+													// add bg red if its the current episode
+													className={`fr justify-start px-5 py-3 border-y-[1px] border-foreground-200 transition-all hover:bg-default-200 cursor-pointer ${
+														episode_number === episode && season_number === season ? 'bg-default-200' : ''
+													}`}
+												>
+													<p className="text-sm">
+														<span className="font-bold">
+															Episode {episode_number}
+															{!name.toLowerCase().includes('episode') ? ':' : ''}{' '}
+														</span>
+														{!name.toLowerCase().includes('episode') && name}
+													</p>
+												</div>
+											);
+										})}
+									</div>
+								))}
+						</motion.div>
+					</ScrollShadow>
+				</div>
 			</motion.div>
 
 			{result && (
@@ -263,18 +314,18 @@ const WatchTV = () => {
 							alt=""
 						/>
 						<div className="fc gap-2 items-start">
-							<h1 className="font-bold text-5xl">{result.name}</h1>
-							<ul className="inline-flex font-bold pb-3 gap-2 tracking-tight">
-								<li className="fr justify-start gap-3">{`${new Date(result.first_air_date).getFullYear()} - ${new Date(
-									result.last_air_date
-								).getFullYear()}`}</li>
-								<li>•</li>
-								<li className="fr justify-start gap-3">{result.number_of_seasons} Seasons</li>
-								<li>•</li>
-								<li className="fr justify-start gap-3">{result.number_of_episodes} Episodes</li>
-								<li>•</li>
-								<li className="fr justify-start gap-3">{result.genres[0].name}</li>
-								<li>•</li>
+							<h1 className="font-bold text-3xl sm:text-5xl">{result.name}</h1>
+							<ul className="sm:inline-flex fr flex-wrap font-bold pb-3 gap-2 tracking-tight text-sm sm:text-base">
+								<li className="fr whitespace-nowrap justify-start gap-3">{`${new Date(
+									result.first_air_date
+								).getFullYear()} - ${new Date(result.last_air_date).getFullYear()}`}</li>
+								<li className="">•</li>
+								<li className="fr whitespace-nowrap justify-start gap-3">{result.number_of_seasons} Seasons</li>
+								<li className="">•</li>
+								<li className="fr whitespace-nowrap justify-start gap-3">{result.number_of_episodes} Episodes</li>
+								<li className="">•</li>
+								<li className="fr whitespace-nowrap justify-start gap-3">{result.genres[0].name}</li>
+								<li className="">•</li>
 								{imdbID && (
 									<li className="fr justify-start gap-3">
 										<a href={`https://www.imdb.com/title/${imdbID}`}>
@@ -300,16 +351,29 @@ const WatchTV = () => {
 											{credits?.cast &&
 												credits.cast.slice(0, 5).map((cast: castProps, i: number) => (
 													<span key={cast.name} className="hover:underline underline-offset-2">
-														<Link to={`/actor/${cast.id}`}>{cast.name + (i !== 4 && ', ')}</Link>
+														<Link to={`/actor/${cast.id}`} aria-label={`View details for ${cast.name}`}>
+															{cast.name + (i !== 4 && ', ')}
+														</Link>
 													</span>
 												))}
 										</p>
 									</li>
 								</>
+								{/* <li className="fr justify-start items-start gap-3">
+									<div className="font-bold">Genres</div>
+									<div className="fr flex-wrap justify-start gap-2">
+										{result.genres &&
+											result.genres.map((genre: genresProps, i: number) => (
+												<Link to={`/genres/${genre.name}`}>
+													<Badge key={i}>{genre.name}</Badge>
+												</Link>
+											))}
+									</div>
+								</li> */}
 								<li className="fr justify-start items-start gap-3">
 									<div className="font-bold">Genres</div>
 									<div className="fr flex-wrap justify-start gap-2">
-										{result.genres && result.genres.map((genre: genresProps, i: number) => <Badge key={i}>{genre.name}</Badge>)}
+										{result.genres && result.genres.map((genre: genresProps, i: number) => <Chip key={i}>{genre.name}</Chip>)}
 									</div>
 								</li>
 								{keywords?.results && keywords.results.length !== 0 && (
@@ -317,9 +381,9 @@ const WatchTV = () => {
 										<div className="font-bold">Keywords</div>
 										<div className="fr flex-wrap justify-start gap-2">
 											{keywords.results.map((keyword: keywordProps, i: number) => (
-												<Badge variant={'outline'} key={i}>
+												<Chip variant="bordered" key={i}>
 													{keyword.name}
-												</Badge>
+												</Chip>
 											))}
 										</div>
 									</li>

@@ -1,7 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
-import { useStore } from '@/zustandStore';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
 import Footer from '@/components/Footer';
@@ -11,6 +9,9 @@ import Review from '@/components/Review';
 import Movie from '@/components/Movie';
 import { Link } from 'react-router-dom';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
+import Video from '@/components/Video';
+import { Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
+import ReactGA from 'react-ga4';
 
 import {
 	genresProps,
@@ -26,7 +27,8 @@ import {
 	videosProps,
 	videoProps,
 } from '@/types';
-import Video from '@/components/Video';
+import useRecordAnalytics from '@/hooks/useRecordAnalytics';
+import { BsChevronDown } from 'react-icons/bs';
 
 const options = {
 	method: 'GET',
@@ -47,10 +49,10 @@ const WatchMovie = () => {
 	const [keywords, setKeywords] = useState<keywordsProps | null>(null);
 	const [videos, setVideos] = useState<videosProps | null>(null);
 	const [imdbID, setImdbID] = useState<string | null>(null);
+	const [source, setSource] = useState('0');
 
 	const location = useLocation();
-
-	const { popups } = useStore();
+	useRecordAnalytics(location);
 
 	useEffect(() => {
 		main.current?.scrollTo(0, 0);
@@ -59,7 +61,15 @@ const WatchMovie = () => {
 	useEffect(() => {
 		fetch(`https://api.themoviedb.org/3/movie/${id}?language=en-US`, options)
 			.then((response) => response.json())
-			.then((response) => setResult(response))
+			.then((response) => {
+				// Track movie view with title
+				ReactGA.event({
+					action: 'View',
+					category: 'Movie',
+					label: response.title,
+				});
+				setResult(response);
+			})
 			.catch((err) => console.error(err));
 
 		fetch(`https://api.themoviedb.org/3/movie/${id}/reviews?language=en-US`, options)
@@ -97,14 +107,14 @@ const WatchMovie = () => {
 
 	useRunOnce({
 		fn: () => {
-			if (popups)
+			if (localStorage.popups === 'true')
 				toast.custom(
 					(t) => {
 						return (
 							<div
 								className={`${
 									t.visible ? 'animate-enter' : 'animate-leave'
-								} max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black bg-secondary ring-opacity-5 px-5 py-3`}
+								} max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black bg-default-50 text-default-foreground ring-opacity-5 px-5 py-3`}
 							>
 								<div className="fr justify-between">
 									<div className="rounded-lg text-sm font-semibold overflow-hidden">
@@ -118,7 +128,7 @@ const WatchMovie = () => {
 						);
 					},
 					{
-						position: 'bottom-center',
+						position: 'top-center',
 						duration: 5000,
 					}
 				);
@@ -134,6 +144,12 @@ const WatchMovie = () => {
 		return rhours + ' h ' + rminutes + 'm';
 	};
 
+	const sourceCollection = [
+		`https://vidsrc.to/embed/movie/${id}`,
+		`https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`,
+		`https://vidsrc.me/embed/movie?tmdb=${id}&color=006FEE`,
+	];
+
 	return (
 		<motion.div
 			initial={{ opacity: 0 }}
@@ -141,7 +157,7 @@ const WatchMovie = () => {
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3 }}
 			ref={main}
-			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 font-poppins gap-10"
+			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 font-inter gap-10 bg-background text-default-foreground"
 		>
 			<Navbar />
 			<div className="w-screen sm:px-20">
@@ -150,13 +166,17 @@ const WatchMovie = () => {
 						<motion.div
 							initial={{ opacity: 0 }}
 							whileInView={{ opacity: 0.5 }}
-							className="w-full h-full scale-150 sm:scale-110 absolute -z-10 blur-2xl opacity-50"
+							className="w-full h-full scale-150 sm:scale-110 absolute blur-2xl opacity-50"
 						>
-							<img className="w-full h-full" src={`https://image.tmdb.org/t/p/w400/${result.backdrop_path}`} />
+							<img
+								draggable="false"
+								className="w-full h-full object-cover"
+								src={`https://image.tmdb.org/t/p/w400/${result.backdrop_path}`}
+							/>
 						</motion.div>
 					)}
-
-					<motion.iframe
+					<motion.div
+						className="w-full aspect-video sm:rounded-2xl fc"
 						viewport={{
 							once: true,
 						}}
@@ -174,10 +194,25 @@ const WatchMovie = () => {
 							duration: 1,
 							ease: 'easeInOut',
 						}}
-						allowFullScreen={true}
-						className="w-full aspect-video sm:rounded-2xl"
-						src={`https://vidsrc.to/embed/movie/${id}`}
-					/>
+					>
+						<Suspense fallback={<div className="text-9xl">LOADING...</div>}>
+							<iframe allowFullScreen={true} className="w-full aspect-video sm:rounded-2xl" src={sourceCollection[source]} />
+						</Suspense>
+						<div className="pt-2 w-full fc sm:items-end">
+							<Dropdown>
+								<DropdownTrigger>
+									<Button>
+										Source {parseInt(source) + 1} <BsChevronDown />
+									</Button>
+								</DropdownTrigger>
+								<DropdownMenu aria-label="Source Selection" onAction={(key) => setSource(key)}>
+									<DropdownItem key={0}>Source 1</DropdownItem>
+									<DropdownItem key={1}>Source 2</DropdownItem>
+									<DropdownItem key={2}>Source 3</DropdownItem>
+								</DropdownMenu>
+							</Dropdown>
+						</div>
+					</motion.div>
 				</div>
 			</div>
 			{result && (
@@ -189,14 +224,23 @@ const WatchMovie = () => {
 							alt=""
 						/>
 						<div className="fc gap-2 items-start">
-							<h1 className="font-bold text-5xl">{result.title || result.name}</h1>
+							<h1 className="font-bold text-5xl">{result.title}</h1>
 							<ul className="inline-flex font-bold pb-3 gap-2 tracking-tight">
-								<li className="fr justify-start gap-3">{result.release_date.split('-')[0]}</li>
-								<li>•</li>
+								{result.release_date.length !== 0 && (
+									<>
+										<li className="fr justify-start gap-3">{result.release_date.split('-')[0]}</li>
+										<li>•</li>
+									</>
+								)}
 								<li className="fr justify-start gap-3">{result.runtime ? timeConvert(result.runtime) : 'N/A'}</li>
 								<li>•</li>
-								<li className="fr justify-start gap-3">{result.genres[0].name}</li>
-								<li>•</li>
+								{result.genres.length !== 0 && (
+									<>
+										<li className="fr justify-start gap-3">{result.genres[0].name}</li>
+										<li>•</li>
+									</>
+								)}
+
 								{imdbID && (
 									<li className="fr justify-start gap-3">
 										<a href={`https://www.imdb.com/title/${imdbID}`}>
@@ -213,17 +257,21 @@ const WatchMovie = () => {
 											<div className="font-bold">Release Date:</div>
 											<div>{result.release_date}</div>
 										</li>
-										<li className="fr justify-start gap-3">
-											<div className="font-bold">Runtime:</div>
-											<div>{timeConvert(result.runtime)}</div>
-										</li>
+										{result.runtime !== 0 && (
+											<li className="fr justify-start gap-3">
+												<div className="font-bold">Runtime:</div>
+												<div>{timeConvert(result.runtime)}</div>
+											</li>
+										)}
 										<li className="fr items-start gap-3">
 											<div className="font-bold">Cast:</div>
 											<p>
 												{credits?.cast &&
 													credits.cast.slice(0, 5).map((cast: castProps, i: number) => (
 														<span key={cast.name} className="hover:underline underline-offset-2">
-															<Link to={`/actor/${cast.id}`}>{cast.name + (i !== 4 && ', ')}</Link>
+															<Link to={`/actor/${cast.id}`} aria-label={`View details for ${cast.name}`}>
+																{cast.name + (i !== 4 && ', ')}
+															</Link>
 														</span>
 													))}
 											</p>
@@ -233,7 +281,7 @@ const WatchMovie = () => {
 								<li className="fr justify-start items-start gap-3">
 									<div className="font-bold">Genres</div>
 									<div className="fr flex-wrap justify-start gap-2">
-										{result.genres && result.genres.map((genre: genresProps, i: number) => <Badge key={i}>{genre.name}</Badge>)}
+										{result.genres && result.genres.map((genre: genresProps, i: number) => <Chip key={i}>{genre.name}</Chip>)}
 									</div>
 								</li>
 								{keywords?.keywords && keywords.keywords.length !== 0 && (
@@ -241,9 +289,9 @@ const WatchMovie = () => {
 										<div className="font-bold">Keywords</div>
 										<div className="fr flex-wrap justify-start gap-2">
 											{keywords.keywords.map((keyword: keywordProps, i: number) => (
-												<Badge variant={'outline'} key={i}>
+												<Chip variant="bordered" key={i}>
 													{keyword.name}
-												</Badge>
+												</Chip>
 											))}
 										</div>
 									</li>

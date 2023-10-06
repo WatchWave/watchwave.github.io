@@ -1,7 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { Button } from './ui/button';
+import { Button } from '@nextui-org/react';
 import { reviewProps } from '@/types';
 
 const Review = ({ review }: { review: reviewProps }) => {
@@ -14,7 +14,7 @@ const Review = ({ review }: { review: reviewProps }) => {
 	}, []);
 
 	return (
-		<div key={review.id} className="fc p-7 bg-secondary rounded-xl">
+		<div key={review.id} className="fc p-7 bg-default-100 rounded-xl">
 			<div className="fc gap-2 items-start">
 				<h5 className="font-bold text-xl fr gap-3">
 					{review.author_details.avatar_path && (
@@ -44,14 +44,14 @@ const Review = ({ review }: { review: reviewProps }) => {
 							<motion.div
 								initial={{ opacity: 1 }}
 								exit={{ opacity: 0 }}
-								className="w-full h-1/2 absolute bottom-0 left-0 right-0 bg-gradient-to-b from-transparent to-secondary"
+								className="w-full h-1/2 absolute bottom-0 left-0 right-0 bg-gradient-to-b from-transparent to-default-100"
 							/>
 						)}
 					</AnimatePresence>
 				</motion.div>
 				{height && height > 100 && (
 					<div className="w-full fr justify-end">
-						<Button onClick={() => setShowMore(!showMore)} variant={'outline'}>
+						<Button onClick={() => setShowMore(!showMore)} variant="solid" color="default">
 							Show {showMore ? 'Less' : 'More'}
 						</Button>
 					</div>

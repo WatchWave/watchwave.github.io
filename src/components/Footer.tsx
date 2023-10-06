@@ -15,8 +15,9 @@ const Footer = () => {
 					d="M74.3425 0.917236V20.945ZM74.3425 20.945H110.167L61.3707 104.972L72.9712 125L145 0.917236H74.3425"
 				/>
 			</svg>
-			<p className="font-poppins text-center text-gray-500">
-				Curated by <a href="https://lemirq.github.io">Vihaan</a> <span>© {new Date().getFullYear()}</span>
+			<p className="font-inter text-center text-gray-500">
+				Curated by <a href="https://lemirq.github.io">Vihaan </a>
+				<span>© {new Date().getFullYear()}</span>
 			</p>
 		</div>
 	);

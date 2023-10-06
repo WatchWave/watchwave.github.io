@@ -1,14 +1,13 @@
-import 'react-cmdk/dist/cmdk.css';
+import '@/cmdk.css';
 import CommandPalette, { filterItems, getItemIndex } from 'react-cmdk';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '@/zustandStore';
+import Logo from './Logo';
 
 const Palette = () => {
 	const [open, setOpen] = useState<boolean>(false);
 	const [search, setSearch] = useState('');
 	const navigate = useNavigate();
-	const { popups, setPopups } = useStore();
 
 	useEffect(() => {
 		setSearch('');
@@ -43,7 +42,6 @@ const Palette = () => {
 					{
 						id: 'home',
 						children: 'Home',
-						href: '#',
 						icon: 'HomeIcon',
 						onClick: () => {
 							navigate(`/`);
@@ -52,44 +50,27 @@ const Palette = () => {
 					{
 						id: 'search',
 						children: 'Search',
-						href: '#',
 						icon: 'MagnifyingGlassIcon',
 						onClick: () => {
 							navigate(`/search/${encodeURI(search).replace('.', '%2E')}`);
 						},
 					},
 					{
+						id: 'settings',
+						children: 'Settings',
+						icon: 'Cog6ToothIcon',
+						onClick: () => {
+							navigate(`/settings`);
+						},
+					},
+					{
 						id: 'vihaan',
 						children: "Vihaan's Website",
-						icon: 'GlobeAltIcon',
 						href: 'https://lemirq.github.io/',
 					},
 				],
 			},
-			{
-				heading: 'Settings',
-				id: 'settings',
-				items: [
-					{
-						id: 'turnoffpopups',
-						children: 'Toggle Popups',
-						icon: 'EyeIcon',
-						onClick: () => {
-							setPopups(!popups);
-						},
-					},
-					{
-						id: 'toggletheme',
-						children: 'Toggle Theme',
-						icon: 'MoonIcon',
-						onClick: () => {
-							localStorage.setItem('vite-ui-theme', localStorage.getItem('vite-ui-theme') === 'dark' ? 'light' : 'dark');
-							document.documentElement.classList.remove(localStorage.getItem('vite-ui-theme') === 'dark' ? 'light' : 'dark');
-							document.documentElement.classList.add(localStorage.getItem('vite-ui-theme') === 'dark' ? 'dark' : 'light');
-						},
-					},
-				],
-			},
+
 			{
 				heading: 'Tips',
 				id: 'tips',
@@ -115,9 +96,35 @@ const Palette = () => {
 				{filteredItems.length ? (
 					filteredItems.map((list) => (
 						<CommandPalette.List key={list.id} heading={list.heading}>
-							{list.items.map(({ id, ...rest }) => (
-								<CommandPalette.ListItem key={id} index={getItemIndex(filteredItems, id)} {...rest} />
-							))}
+							{list.items.map(({ id, ...rest }) =>
+								id === 'vihaan' ? (
+									<CommandPalette.ListItem
+										key={id}
+										index={getItemIndex(filteredItems, id)}
+										{...rest}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<svg className="w-5 h-auto" xmlns="http://www.w3.org/2000/svg" width="145" height="125" viewBox="0 0 145 125">
+											<path
+												className="fill-gray-500"
+												fillRule="evenodd"
+												clipRule="evenodd"
+												d="M56.0583 56.7265L72.7693 28.9571L95.9812 28.937L56.0312 96.7368L0 0H23.2009L56.0583 56.7265Z"
+											/>
+											<path
+												className="fill-gray-500"
+												fillRule="evenodd"
+												clipRule="evenodd"
+												d="M74.3425 0.917236V20.945ZM74.3425 20.945H110.167L61.3707 104.972L72.9712 125L145 0.917236H74.3425"
+											/>
+										</svg>
+										<p>{rest.children}</p>
+									</CommandPalette.ListItem>
+								) : (
+									<CommandPalette.ListItem key={id} index={getItemIndex(filteredItems, id)} {...rest} />
+								)
+							)}
 						</CommandPalette.List>
 					))
 				) : (

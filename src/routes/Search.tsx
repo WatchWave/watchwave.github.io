@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Input } from '@/components/ui/input';
 import { useStore } from '@/zustandStore';
-import { Button } from '@/components/ui/button';
-import Movie from '@/components/Movie';
-import { motion } from 'framer-motion';
-import Navbar from '@/components/Navbar';
+import { Input, Button, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import Navigation from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { SearchResultProps, suggestionsProps } from '@/types';
+import { SearchResultProps, castProps, suggestionsProps } from '@/types';
 import Slider from '@/components/Slider';
-
+import Person from '@/components/Person';
+import useRecordAnalytics from '@/hooks/useRecordAnalytics';
+import ReactGA from 'react-ga4';
+import { BsChevronDown } from 'react-icons/bs';
+import Movie from '@/components/Movie';
 const options = {
 	method: 'GET',
 	headers: {
@@ -24,10 +26,22 @@ const Search = () => {
 	const { query } = useParams();
 	const { search, setSearch, searchResults, setSearchResults } = useStore();
 
-	const [nowPlaying, setNowPlaying] = useState<suggestionsProps | null>(null);
 	const [popular, setPopular] = useState<suggestionsProps | null>(null);
 	const [topRated, setTopRated] = useState<suggestionsProps | null>(null);
 	const [upcoming, setUpcoming] = useState<suggestionsProps | null>(null);
+	const [filter, setFilter] = useState('all');
+
+	const filteredItems = searchResults?.results
+		.filter((result: SearchResultProps) => {
+			if (filter === 'all') return true;
+			if (filter === 'movies') return result.media_type === 'movie';
+			if (filter === 'tv') return result.media_type === 'tv';
+			if (filter === 'person') return result.media_type === 'person';
+			return false;
+		})
+		.sort((a: SearchResultProps) => (a.poster_path ? -1 : 1))
+		.sort((a: SearchResultProps, b: SearchResultProps) => a.popularity - b.popularity)
+		.sort((a: SearchResultProps) => (a.media_type === 'person' ? 1 : -1));
 
 	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -35,20 +49,23 @@ const Search = () => {
 		navigate(`/search/${encodeURI(search).replace('.', '%2E')}`);
 	};
 
-	useEffect(() => {
-		console.log(searchResults);
-	}, [searchResults]);
+	useRecordAnalytics(location);
 
 	useEffect(() => {
 		setSearch(query || '');
 		if (!query) return;
+		ReactGA.event({
+			category: 'query',
+			action: 'search',
+			label: query,
+		});
 		setSearchResults(null);
 		fetch(`https://api.themoviedb.org/3/search/multi?query=${query}&include_adult=false&language=en-US&page=1`, options)
 			.then((response) => response.json())
 			.then((response) => {
 				console.log(response);
 
-				setSearchResults({ ...response, results: response.results.filter((result: SearchResultProps) => result.media_type !== 'person') });
+				setSearchResults(response);
 			})
 			.catch((err) => console.error(err));
 
@@ -57,36 +74,20 @@ const Search = () => {
 		};
 	}, [location]);
 
-	useEffect(() => {
-		fetch(`https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1`, options)
-			.then((response) => response.json())
-			.then((response) => {
-				console.log(response);
-				setNowPlaying(response);
-			})
-			.catch((err) => console.error(err));
-
-		fetch(`https://api.themoviedb.org/3/movie/popular?language=en-US&page=1`, options)
-			.then((response) => response.json())
-			.then((response) => {
-				console.log(response);
-				setPopular(response);
-			})
-			.catch((err) => console.error(err));
-
-		fetch(`https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1`, options)
-			.then((response) => response.json())
-			.then((response) => {
-				console.log(response);
-				setTopRated(response);
-			})
-			.catch((err) => console.error(err));
-
-		fetch(`https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1`, options)
-			.then((response) => response.json())
-			.then((response) => {
-				console.log(response);
-				setUpcoming(response);
+	useMemo(() => {
+		if (query) return;
+		Promise.all([
+			fetch(`https://api.themoviedb.org/3/movie/popular?language=en-US&page=1`, options),
+			fetch(`https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1`, options),
+			fetch(`https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1`, options),
+		])
+			.then(([popularResponse, topRatedResponse, upcomingResponse]) =>
+				Promise.all([popularResponse.json(), topRatedResponse.json(), upcomingResponse.json()])
+			)
+			.then(([popular, topRated, upcoming]) => {
+				setPopular(popular);
+				setTopRated(topRated);
+				setUpcoming(upcoming);
 			})
 			.catch((err) => console.error(err));
 	}, []);
@@ -125,52 +126,92 @@ const Search = () => {
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}
-			className="w-screen h-screen fc justify-between pt-36 overflow-x-hidden select-none"
+			className="w-screen h-screen fc justify-between pt-36 overflow-x-hidden select-none bg-background text-default-foreground"
 		>
-			<Navbar />
-			<div className="max-w-6xl px-10 w-full fc relative gap-4">
-				<h1 className="font-poppins font-bold text-6xl md:text-9xl">Search</h1>
-				<form onSubmit={handleSearch} className="w-full max-w-4xl fr gap-3">
-					<Input value={search} onChange={(e) => setSearch(e.target.value)} />
-					<Button type="submit">Search</Button>
+			<Navigation />
+			<div className="max-w-6xl px-4 sm:px-10 w-full fc relative gap-4">
+				<h1 className="font-inter font-bold text-6xl md:text-9xl">Search</h1>
+				<form onSubmit={handleSearch} className="w-full max-w-4xl fc gap-3">
+					<div className="fr gap-2 w-full">
+						<Input placeholder="Search for a Movie, TV Show, or Person" value={search} onChange={(e) => setSearch(e.target.value)} />
+						<Button type="submit">Search</Button>
+						{query && (
+							<Button onClick={() => navigate('/search')} variant="bordered">
+								Clear
+							</Button>
+						)}
+					</div>
 					{query && (
-						<Button onClick={() => navigate('/search')} variant={'outline'}>
-							Clear
-						</Button>
+						<div className="w-full">
+							<Dropdown>
+								<DropdownTrigger>
+									<Button>
+										{
+											{
+												all: 'All',
+												movies: 'Movies',
+												tv: 'TV Shows',
+												person: 'People',
+											}[filter]
+										}{' '}
+										<BsChevronDown />
+									</Button>
+								</DropdownTrigger>
+								<DropdownMenu aria-label="Filter Selection" onAction={(key) => setFilter(key)}>
+									<DropdownItem key="all">All</DropdownItem>
+									<DropdownItem key="movies">Movies</DropdownItem>
+									<DropdownItem key="tv">TV Shows</DropdownItem>
+									<DropdownItem key="person">People</DropdownItem>
+								</DropdownMenu>
+							</Dropdown>
+						</div>
 					)}
 				</form>
 			</div>
 			{searchResults && searchResults.page && searchResults.results.length !== 0 && (
-				<motion.div
-					variants={container}
-					initial="hidden"
-					animate="visible"
-					className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-10 max-w-6xl mt-10 px-10"
-				>
-					{/* sort by popularity */}
-					{searchResults.results
-						.sort((a: SearchResultProps, b: SearchResultProps) => b.vote_average * b.vote_count - a.vote_average * b.vote_count)
-						.map((result: SearchResultProps) => (
-							<Movie key={result.id + result.media_type} result={result} />
-						))}
-				</motion.div>
+				<>
+					<AnimatePresence>
+						{filteredItems && filteredItems?.length > 1 ? (
+							<motion.div
+								variants={container}
+								initial="hidden"
+								animate="visible"
+								className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-10 w-full max-w-6xl mt-10 px-4 sm:px-10"
+							>
+								{/* sort by popularity */}
+								<AnimatePresence>
+									{filteredItems &&
+										filteredItems.map((result: SearchResultProps | castProps) => {
+											return result.media_type.includes('t') || result.media_type.includes('m') ? (
+												<Movie key={result.id + result.media_type} result={result} />
+											) : (
+												<Person key={result.id + result.media_type} result={result} />
+											);
+										})}
+								</AnimatePresence>
+							</motion.div>
+						) : (
+							<div className="max-w-6xl w-full h-full fc">
+								<h1 className="font-inter font-bold text-gray-500 text-4xl">No results found</h1>
+							</div>
+						)}
+					</AnimatePresence>
+				</>
 			)}
 			{searchResults && searchResults.results?.length === 0 && (
 				<div className="max-w-6xl w-full h-full fc">
-					<h1 className="font-poppins font-bold text-gray-500 text-4xl">No results found</h1>
+					<h1 className="font-inter font-bold text-gray-500 text-4xl">No results found</h1>
 				</div>
 			)}
-			{query && searchResults && searchResults.page !== searchResults.total_pages && (
+			{query && searchResults && searchResults.page !== searchResults.total_pages && filteredItems && filteredItems?.length > 0 && (
 				<div className="w-full fc my-10">
-					<Button onClick={loadNextPage} variant={'secondary'}>
+					<Button onClick={loadNextPage} color="primary">
 						Load More
 					</Button>
 				</div>
 			)}
 			{!query && (
 				<>
-					{nowPlaying?.results.length !== 0 && <Slider type="movie" title="Now Playing" results={nowPlaying?.results} />}
-
 					{popular?.results.length !== 0 && <Slider type="movie" title="Popular" results={popular?.results} />}
 
 					{topRated?.results.length !== 0 && <Slider type="movie" title="Top Rated" results={topRated?.results} />}

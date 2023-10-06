@@ -8,6 +8,8 @@ import WatchMovie from './routes/WatchMovie';
 import Actor from './routes/Actor';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import Settings from './routes/Settings';
+import Warning from './components/Warning';
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
@@ -17,15 +19,17 @@ const AnimatedRoutes = () => {
 			<div className="sm:block hidden">
 				<Toaster />
 			</div>
+			{localStorage.warningCleared === undefined || localStorage.warningCleared === 'false' ? <Warning /> : null}
 			<AnimatePresence mode="wait">
 				<Routes key={location.pathname} location={location}>
-					<Route path="/" element={<Home />} />
-					<Route path="/watch/tv/:id" element={<WatchTV />} />
-					<Route path="/watch/movie/:id" element={<WatchMovie />} />
-					<Route path="/search/:query" element={<Search />} />
-					<Route path="/search/" element={<Search />} />
-					<Route path="/actor/:actor" element={<Actor />} />
-					<Route path="*" element={<Error />} />
+					<Route path="/" element={<Home />} errorElement={<Error />} />
+					<Route path="/watch/tv/:id" element={<WatchTV />} errorElement={<Error />} />
+					<Route path="/watch/movie/:id" element={<WatchMovie />} errorElement={<Error />} />
+					<Route path="/search/:query" element={<Search />} errorElement={<Error />} />
+					<Route path="/search/" element={<Search />} errorElement={<Error />} />
+					<Route path="/actor/:actor" element={<Actor />} errorElement={<Error />} />
+					<Route path="/settings" element={<Settings />} errorElement={<Error />} />
+					<Route path="*" element={<Error type="404" />} />
 				</Routes>
 			</AnimatePresence>
 		</>

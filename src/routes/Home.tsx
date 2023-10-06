@@ -1,42 +1,47 @@
 import { useStore } from '@/zustandStore';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import useRunOnce from '@/hooks/useRunOnce';
+import { Button, Input } from '@nextui-org/react';
+import { Kbd } from '@nextui-org/react';
+import ReactGA from 'react-ga4';
+import useRecordAnalytics from '@/hooks/useRecordAnalytics';
+import { AdBlockDetectedWrapper } from 'adblock-detect-react';
 
 const Home = () => {
 	// Use the search query from the URL to set the search state
 	const navigate = useNavigate();
-	const { search, setSearch, popups } = useStore();
+	const { search, setSearch } = useStore();
 	const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		if (!search) return;
 		navigate(`/search/${encodeURI(search).replace('.', '%2E')}`);
 	};
+	const location = useLocation();
 
 	useEffect(() => {
 		setSearch('');
 	}, []);
+	useRecordAnalytics(location);
 
 	useRunOnce({
 		fn: () => {
-			if (popups)
+			if (localStorage.popups === 'true')
 				toast.custom(
 					(t) => {
 						return (
 							<div
 								className={`${
 									t.visible ? 'animate-enter' : 'animate-leave'
-								} max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black bg-secondary ring-opacity-5 px-5 py-3`}
+								} max-w-md w-full shadow- rounded-lg pointer-events-auto flex ring-1 ring-black bg-default-50 text-default-foreground ring-opacity-5 px-5 py-3`}
 							>
 								<div className="fr justify-between gap-3">
 									<div>{t.icon && <>{t.icon}</>}</div>
 									<div className="rounded-lg text-sm font-semibold overflow-hidden">
-										Try pressing ctrl or cmd + k to open the palette!
+										Try pressing <Kbd keys={['command']}>K</Kbd> or <Kbd keys={['ctrl']}>K</Kbd> to open the palette!
 									</div>
 								</div>
 							</div>
@@ -45,11 +50,13 @@ const Home = () => {
 					{
 						position: 'bottom-right',
 						duration: 5000,
-						icon: '🎨',
+						icon: '⚡️',
 					}
 				);
 		},
 	});
+
+	ReactGA.send({ hitType: 'pageview', page: location.pathname });
 
 	return (
 		<motion.div
@@ -57,12 +64,12 @@ const Home = () => {
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}
-			className="fc w-screen h-screen overflow-x-hidden relative select-none"
+			className="fc w-screen h-screen overflow-x-hidden relative select-none text-default-foreground bg-default-50"
 		>
-			<div className="absolute inset-0 -z-10 bg-[url(/bg-light.webp)] opacity-60 dark:bg-[url(/bg-dark.webp)] bg-cover bg-no-repeat" />
-			<Navbar />
+			<div className="absolute inset-0  bg-[url(/bg-light.webp)] opacity-60 dark:bg-[url(/bg-dark.webp)] bg-cover bg-no-repeat" />
+			<Navbar transparent />
 			<div className="max-w-6xl w-full fc relative gap-4 px-10">
-				<h1 className="font-poppins font-bold fc sm:fr gap-1">
+				<h1 className="font-inter font-bold fc sm:fr gap-1">
 					<motion.svg
 						className="sm:h-[clamp(36px,_9vw_,130px)] sm:w-[clamp(36px,_9vw_,130px)] md:h-[130px] w-full h-full dark:stroke-white stroke-black"
 						width="90"
@@ -112,13 +119,13 @@ const Home = () => {
 						<span className="sm:hidden block">W</span>atchWave
 					</p>
 				</h1>
-				<p className="font-poppins text-center text-gray-500 max-w-[75ch] text-sm md:text-base">
+				<p className="font-inter text-center text-default-600 max-w-[75ch] text-sm md:text-base">
 					WatchWave is a free streaming service that allows you to watch movies and TV shows for free. WatchWave is not responsible for any
 					content that you stream.
 				</p>
 				<form onSubmit={handleSearch} className="w-full max-w-4xl fc sm:fr gap-3">
-					<Input className="md:text-xl" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
-					<Button className="w-full sm:w-auto md:text-xl" type="submit">
+					<Input size="lg" placeholder="Search" value={search} onChange={(e) => setSearch(e.target.value)} />
+					<Button className="w-full sm:w-auto" variant="shadow" color="primary" type="submit">
 						Search
 					</Button>
 				</form>
@@ -126,19 +133,19 @@ const Home = () => {
 			<div className="fixed bottom-0 w-screen py-3 px-3 fr gap-2">
 				<svg className="w-5 h-auto" xmlns="http://www.w3.org/2000/svg" width="145" height="125" viewBox="0 0 145 125">
 					<path
-						className="fill-gray-500"
+						className="fill-default-600"
 						fillRule="evenodd"
 						clipRule="evenodd"
 						d="M56.0583 56.7265L72.7693 28.9571L95.9812 28.937L56.0312 96.7368L0 0H23.2009L56.0583 56.7265Z"
 					/>
 					<path
-						className="fill-gray-500"
+						className="fill-default-600"
 						fillRule="evenodd"
 						clipRule="evenodd"
 						d="M74.3425 0.917236V20.945ZM74.3425 20.945H110.167L61.3707 104.972L72.9712 125L145 0.917236H74.3425"
 					/>
 				</svg>
-				<p className="font-poppins text-center text-gray-500">
+				<p className="font-inter text-center text-default-600">
 					Curated by <a href="https://lemirq.github.io">Vihaan</a> <span>© {new Date().getFullYear()}</span>
 				</p>
 			</div>

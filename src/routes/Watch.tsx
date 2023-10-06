@@ -132,7 +132,7 @@ const Watch = () => {
 							<div
 								className={`${
 									t.visible ? 'animate-enter' : 'animate-leave'
-								} max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black bg-secondary ring-opacity-5 px-5 py-3`}
+								} max-w-md w-full shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black bg-default-50 text-default-foreground ring-opacity-5 px-5 py-3`}
 							>
 								<div className="fr justify-between">
 									<div className="rounded-lg text-sm font-semibold overflow-hidden">
@@ -168,7 +168,7 @@ const Watch = () => {
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.5 }}
 			ref={main}
-			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 font-poppins gap-10"
+			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-20 inter gap-10"
 		>
 			<Navbar />
 			{type === 'movie' && (

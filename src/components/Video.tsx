@@ -50,7 +50,7 @@ const Video = ({ video }: { video: videoProps }) => {
 							allowFullScreen
 						/>
 						<div className="absolute top-2 right-2 fc items-end justify-start pointer-events-none">
-							<button onClick={() => setStarted(false)} className="pointer-events-auto bg-secondary p-2 rounded-full">
+							<button onClick={() => setStarted(false)} className="pointer-events-auto bg-default-50 p-2 rounded-full">
 								<AiFillCloseCircle size={24} />
 							</button>
 						</div>

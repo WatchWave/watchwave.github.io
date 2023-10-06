@@ -1,12 +1,13 @@
 import Footer from '@/components/Footer';
 import Movie from '@/components/Movie';
 import Navbar from '@/components/Navbar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@nextui-org/react';
+import { Chip } from '@nextui-org/react';
 import { ActorCreditsProps, ActorProps, castProps } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import useRecordAnalytics from '@/hooks/useRecordAnalytics';
 
 const options = {
 	method: 'GET',
@@ -38,13 +39,17 @@ const Actor = () => {
 
 		fetch(`https://api.themoviedb.org/3/person/${id}/combined_credits?language=en-US`, options)
 			.then((response) => response.json())
-			.then((response) => setActorCredits(response))
+			.then((response) => {
+				console.log(response);
+				setActorCredits(response);
+			})
 			.catch((err) => console.error(err));
 	}, [location]);
+	useRecordAnalytics(location);
 
 	useEffect(() => {
 		el.current && setHeight(el.current?.clientHeight);
-	}, [el.current]);
+	}, [el.current, currentActor?.biography]);
 
 	const handleLoadMore = () => {
 		setIndex([index[0], index[1] + 20]);
@@ -73,7 +78,7 @@ const Actor = () => {
 			animate={{ opacity: 2 }}
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}
-			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-28 font-poppins gap-10 select-none"
+			className="w-screen h-screen overflow-x-hidden pt-16 sm:pt-28 font-inter gap-10 select-none bg-background text-default-foreground"
 		>
 			<Navbar />
 			<div className="w-full fc">
@@ -105,7 +110,7 @@ const Actor = () => {
 								</>
 							)}
 							<li>
-								<Badge className="hover:bg-primary">{currentActor?.known_for_department}</Badge>
+								<Chip>{currentActor?.known_for_department}</Chip>
 							</li>
 							<li>•</li>
 							<li className="fr justify-start gap-3">
@@ -148,7 +153,7 @@ const Actor = () => {
 									initial={{ height: 'auto' }}
 									animate={{ height: showMore ? 'auto' : height && height < 200 ? 'auto' : 200 }}
 								>
-									<p className="text-base text-gray-300">{currentActor?.biography}</p>
+									<p className="text-base text-foreground-500">{currentActor?.biography}</p>
 									<AnimatePresence>
 										{!showMore && height && height > 200 && (
 											<motion.div
@@ -161,7 +166,7 @@ const Actor = () => {
 								</motion.div>
 								{height && height >= 200 && (
 									<div className="w-full fr justify-end">
-										<Button variant={'outline'} onClick={() => setShowMore(!showMore)}>
+										<Button variant="bordered" onClick={() => setShowMore(!showMore)}>
 											Show {showMore ? 'Less' : 'More'}
 										</Button>
 									</div>
@@ -185,11 +190,15 @@ const Actor = () => {
 								.slice(index[0], index[1])
 								.map((movie, i) => <Movie key={movie.id + movie.media_type + i} result={movie} />)}
 					</motion.div>
-					<div className="w-full fr">
-						<Button className="mt-10" variant="outline" onClick={handleLoadMore}>
-							Load More
-						</Button>
-					</div>
+
+					{/* dont show if total movies are 10 */}
+					{actorCredits?.cast?.length !== 10 && (
+						<div className="w-full fr">
+							<Button className="mt-10" variant="bordered" onClick={handleLoadMore}>
+								Load More
+							</Button>
+						</div>
+					)}
 				</section>
 			</div>
 			<Footer />
