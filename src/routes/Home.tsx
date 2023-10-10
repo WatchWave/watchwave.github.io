@@ -9,7 +9,6 @@ import { Button, Input } from '@nextui-org/react';
 import { Kbd } from '@nextui-org/react';
 import ReactGA from 'react-ga4';
 import useRecordAnalytics from '@/hooks/useRecordAnalytics';
-import { AdBlockDetectedWrapper } from 'adblock-detect-react';
 
 const Home = () => {
 	// Use the search query from the URL to set the search state
@@ -23,6 +22,7 @@ const Home = () => {
 	const location = useLocation();
 
 	useEffect(() => {
+		console.log(localStorage.electron);
 		setSearch('');
 	}, []);
 	useRecordAnalytics(location);

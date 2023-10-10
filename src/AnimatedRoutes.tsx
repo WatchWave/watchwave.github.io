@@ -10,6 +10,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Settings from './routes/Settings';
 import Warning from './components/Warning';
+import Download from './routes/Download';
 
 const AnimatedRoutes = () => {
 	const location = useLocation();
@@ -27,6 +28,7 @@ const AnimatedRoutes = () => {
 					<Route path="/watch/movie/:id" element={<WatchMovie />} errorElement={<Error />} />
 					<Route path="/search/:query" element={<Search />} errorElement={<Error />} />
 					<Route path="/search/" element={<Search />} errorElement={<Error />} />
+					<Route path="/download/" element={<Download />} errorElement={<Error />} />
 					<Route path="/actor/:actor" element={<Actor />} errorElement={<Error />} />
 					<Route path="/settings" element={<Settings />} errorElement={<Error />} />
 					<Route path="*" element={<Error type="404" />} />

@@ -25,7 +25,7 @@ const Navigation = ({ transparent }: { transparent?: boolean }) => {
 		<Navbar
 			shouldHideOnScroll
 			classNames={{
-				base: `z-50 justify-between fixed top-0 h-16 shadow-sm font-inter w-screen backdrop-blur-2xl sm:px-16 ${
+				base: `z-50 navbar justify-between fixed top-0 h-16 shadow-sm font-inter w-screen backdrop-blur-2xl sm:px-16 ${
 					transparent ? 'bg-transparent' : ''
 				}`,
 				wrapper: 'max-w-full',
@@ -51,6 +51,11 @@ const Navigation = ({ transparent }: { transparent?: boolean }) => {
 				<NavbarItem isActive={location.pathname === '/search'}>
 					<Link as={RLink} to="/search" color="foreground">
 						Search
+					</Link>
+				</NavbarItem>
+				<NavbarItem isActive={location.pathname === '/download'}>
+					<Link as={RLink} to="/download" color="foreground">
+						Download
 					</Link>
 				</NavbarItem>
 				<NavbarItem isActive={location.pathname === '/settings'}>

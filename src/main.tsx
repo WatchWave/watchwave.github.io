@@ -4,7 +4,7 @@ import App from './App.tsx';
 import './index.css';
 // import { ThemeProvider } from '@/components/theme-provider';
 import ReactGA from 'react-ga4';
-ReactGA.initialize('G-K71VRETLRW');
+// ReactGA.initialize('G-K71VRETLRW');
 import { NextUIProvider } from '@nextui-org/react';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
