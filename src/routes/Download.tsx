@@ -7,11 +7,24 @@ import { RxValueNone } from 'react-icons/rx';
 import { DiLinux } from 'react-icons/di';
 import { FaApple } from 'react-icons/fa';
 import { SiWindows } from 'react-icons/si';
-import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
+import {
+	Button,
+	Dropdown,
+	DropdownItem,
+	DropdownMenu,
+	DropdownTrigger,
+	Modal,
+	ModalBody,
+	ModalContent,
+	ModalFooter,
+	ModalHeader,
+	useDisclosure,
+} from '@nextui-org/react';
 import { BsChevronDown } from 'react-icons/bs';
 
 const Download = () => {
 	const [os, setOs] = useState('Not known');
+	const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
 	const getOperatingSystem = () => {
 		let operatingSystem = 'Not known';
@@ -34,21 +47,14 @@ const Download = () => {
 		getOperatingSystem();
 	}, []);
 
-	const handleDownload = () => {
-		// redirect to download page
-		if (os === 'MacOS') {
-			window.open('', '_blank');
-		}
-	};
-
 	const getFeature = (feature: string, description: string, icon: JSX.Element) => {
 		return (
 			<>
 				<motion.li
-					className="p-3 sm:block hidden sm:p-5 gap-3 rounded-2xl w-full h-full bg-foreground-100 fc justify-start items-start text-5xl text-secondary"
+					className="p-3 sm:flex hidden sm:p-5 gap-3 rounded-2xl w-full h-full bg-foreground-100 fc justify-start items-start text-5xl text-secondary"
 					variants={children}
 				>
-					{icon}
+					<div>{icon}</div>
 					<div className="fc gap-2 items-start">
 						<p className="text-xl text-foreground">{feature}</p>
 						<p className="text-base sm:text-xl text-foreground-400">{description}</p>
@@ -76,8 +82,8 @@ const Download = () => {
 			opacity: 1,
 			transition: {
 				staggerChildren: 0.5,
-				duration: 1.5,
-				delayChildren: 1,
+				duration: 1,
+				delayChildren: 0,
 			},
 		},
 	};
@@ -118,6 +124,80 @@ const Download = () => {
 							...as a desktop app
 						</motion.p>
 
+						<Modal scrollBehavior="inside" size="2xl" isOpen={isOpen} onOpenChange={onOpenChange} className="z-10">
+							<ModalContent>
+								{(onClose) => (
+									<>
+										<ModalHeader className="flex flex-col gap-1">Instructions for Installation</ModalHeader>
+										<ModalBody>
+											<div className="w-full h-full fc gap-10">
+												<p className="w-full text-danger ">
+													Please read these instructions carefully before installing WatchWave.
+												</p>
+												<div className="w-full fr justify-start items-start gap-3">
+													<div className="text-2xl fc w-14 font-bold border-2 border-secondary rounded-full aspect-square">
+														1
+													</div>
+													<div className="w-full fc gap-2 items-start">
+														<p className="text-xl">Download the app</p>
+														<p className="text-base text-foreground-400">Click the button below to download the app.</p>
+														<button
+															className={`px-4 py-2 rounded-2xl bg-transparent border-secondary border-2 sm:text-xl md:text-xl hover:bg-secondary transition-colors hover:text-white outline-none my-4`}
+														>
+															<a
+																href="https://github.com/WatchWave/watchwave.github.io/raw/main/releases/WatchWave.dmg?download="
+																download
+																className="fr gap-2 w-full h-full"
+																target="_blank"
+															>
+																<FaApple /> Download for MacOS
+															</a>
+														</button>
+														<video src="/dl/Step1.mp4" className="rounded-xl w-full" autoPlay loop />
+													</div>
+												</div>
+												<div className="w-full fr justify-start items-start gap-3">
+													<div className="text-2xl fc w-14 font-bold border-2 border-secondary rounded-full aspect-square">
+														2
+													</div>
+													<div className="w-full fc gap-2 items-start">
+														<p className="text-xl">Download the app</p>
+														<p>Open Terminal and enter the following command to download the app. </p>
+														<code className="p-1 bg-default-200 border-2 rounded-xl border-default-200 my-4">
+															<p>sudo spctl --global-disable</p>
+															<p>xattr -cr /Applications/WatchWave.app</p>
+															<p>sudo spctl --global-enable</p>
+														</code>
+														<video src="/dl/Step2.mp4" className="rounded-xl w-full" autoPlay loop />
+													</div>
+												</div>
+												<div className="w-full fr justify-start items-start gap-3">
+													<div className="w-full fc gap-2 items-start p-4 border-secondary border-2 rounded-3xl">
+														<h1 className="text-2xl">Why do I have to do all that?</h1>
+														<p>
+															Apple is very greedy and wants me to pay $100 a year to be able to sign my apps. I'm not
+															going to do that.
+														</p>
+														<a href="https://www.buymeacoffee.com/sharmavihaan" target="_blank">
+															<img
+																src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+																alt="Buy Me A Coffee"
+																className="w-40 h-10"
+															/>
+														</a>
+													</div>
+												</div>
+											</div>
+										</ModalBody>
+										<ModalFooter>
+											<Button color="secondary" onPress={onClose}>
+												Ok
+											</Button>
+										</ModalFooter>
+									</>
+								)}
+							</ModalContent>
+						</Modal>
 						<Dropdown>
 							<DropdownTrigger>
 								<motion.button
@@ -131,15 +211,10 @@ const Download = () => {
 								</motion.button>
 							</DropdownTrigger>
 							<DropdownMenu aria-label="Static Actions" disabledKeys={['win', 'linux']}>
-								<DropdownItem key="mac" onClick={handleDownload}>
-									<a
-										className="fr justify-start gap-2"
-										href="https://github.com/WatchWave/watchwave.github.io/raw/main/releases/WatchWave.dmg?download="
-										download
-										target="_self"
-									>
+								<DropdownItem key="mac">
+									<div className="fr justify-start gap-2" onClick={onOpen}>
 										<FaApple /> Download for MacOS
-									</a>
+									</div>
 								</DropdownItem>
 								<DropdownItem key="win">
 									<div className="fr justify-start gap-2">
@@ -184,7 +259,7 @@ const Download = () => {
 							transform: 'rotateX(var(--rotateX)) matrix(1, 0, 0, 1, 0, 0)',
 						}}
 						exit={{ opacity: 0, y: 100, filter: 'blur(20px)' }}
-						transition={{ duration: 1, delay: 2 }}
+						transition={{ duration: 1, delay: 2.5 }}
 						src="/App.png"
 						alt="App"
 						className="w-full h-full rounded-xl app-img shadow-2xl object-cover"
