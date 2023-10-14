@@ -34,7 +34,7 @@ const Download = () => {
 		const operatingSystem = getOperatingSystem();
 		// redirect to download page
 		if (operatingSystem === 'MacOS') {
-			window.open('');
+			window.open('https://github.com/WatchWave/watchwave.github.io/raw/main/public/WatchWave.dmg?download=');
 		}
 	};
 
