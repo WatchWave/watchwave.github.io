@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Link, useDisclosure } from '@nextui-org/react';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Link, useDisclosure, Tooltip } from '@nextui-org/react';
 import { useEffect, useState } from 'react';
 
 export default function Warning() {
@@ -6,7 +6,7 @@ export default function Warning() {
 		defaultOpen: true,
 	});
 
-	const [time, setTime] = useState(10);
+	const [time, setTime] = useState(5);
 	useEffect(() => {
 		const timeout = setTimeout(() => {
 			setTime(time - 1);
@@ -36,6 +36,9 @@ export default function Warning() {
 								</Link>{' '}
 								while watching videos on WatchWave. There are spammy ads on the video players, which are out of our control and can't
 								be disabled. Using an ad blocker is an easy solution to get rid of the ads on the video players.
+								<br />
+								<br />
+								Click OK to close this popup permanently.
 							</p>
 						</ModalBody>
 						<ModalFooter>

@@ -101,3 +101,18 @@ button {
 	app-region: no-drag;
 	-webkit-app-region: no-drag;
 }
+
+.app-img-c {
+	--perspective: 5000px;
+}
+.app-img {
+	--rotateX: 0deg;
+}
+@media (min-width: 768px) {
+	.app-img-c {
+		--perspective: 5000px;
+	}
+	.app-img {
+		--rotateX: 30deg;
+	}
+}

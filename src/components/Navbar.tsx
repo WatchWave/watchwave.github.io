@@ -16,6 +16,10 @@ const Navigation = ({ transparent }: { transparent?: boolean }) => {
 			to: '/search',
 		},
 		{
+			name: 'Download',
+			to: '/download',
+		},
+		{
 			name: 'Settings',
 			to: '/settings',
 		},
@@ -53,7 +57,7 @@ const Navigation = ({ transparent }: { transparent?: boolean }) => {
 						Search
 					</Link>
 				</NavbarItem>
-				<NavbarItem isActive={location.pathname === '/download'}>
+				<NavbarItem isActive={location.pathname === '/download'} className="hidden md:block">
 					<Link as={RLink} to="/download" color="foreground">
 						Download
 					</Link>
