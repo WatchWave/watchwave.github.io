@@ -9,6 +9,7 @@ import { FaApple } from 'react-icons/fa';
 import { SiWindows } from 'react-icons/si';
 import {
 	Button,
+	Code,
 	Dropdown,
 	DropdownItem,
 	DropdownMenu,
@@ -77,11 +78,15 @@ const Download = () => {
 	const container = {
 		hidden: {
 			opacity: 0,
+			transition: {
+				staggerChildren: 0.5,
+				duration: 0.2,
+			},
 		},
 		show: {
 			opacity: 1,
 			transition: {
-				staggerChildren: 0.5,
+				staggerChildren: 0.3,
 				duration: 1,
 				delayChildren: 0,
 			},
@@ -89,7 +94,7 @@ const Download = () => {
 	};
 
 	const children = {
-		hidden: { opacity: 0, y: 100, scale: 0.5 },
+		hidden: { opacity: 0, y: 100, scale: 0.5, transition: { duration: 0.2 } },
 		show: { opacity: 1, y: 0, scale: 1, transition: { duration: 1 } },
 	};
 
@@ -97,7 +102,6 @@ const Download = () => {
 		<motion.div
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
-			exit={{ opacity: 0 }}
 			transition={{ duration: 0.3 }}
 			className="fc w-screen h-screen overflow-x-hidden relative select-none text-default-foreground bg-background font-inter"
 		>
@@ -107,7 +111,6 @@ const Download = () => {
 					<motion.h1
 						initial={{ opacity: 0, y: 100 }}
 						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: 100 }}
 						transition={{ duration: 1 }}
 						className="text-4xl md:text-9xl font-bold tracking-tighter"
 					>
@@ -117,7 +120,6 @@ const Download = () => {
 						<motion.p
 							initial={{ opacity: 0, y: 100 }}
 							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: 100 }}
 							transition={{ duration: 1, delay: 0.5 }}
 							className="text-xl sm:text-2xl md:text-4xl font-medium text-default-500 tracking-tighter"
 						>
@@ -125,7 +127,7 @@ const Download = () => {
 						</motion.p>
 
 						<Modal scrollBehavior="inside" size="2xl" isOpen={isOpen} onOpenChange={onOpenChange} className="z-10">
-							<ModalContent>
+							<ModalContent className="snap-y">
 								{(onClose) => (
 									<>
 										<ModalHeader className="flex flex-col gap-1">Instructions for Installation</ModalHeader>
@@ -134,7 +136,7 @@ const Download = () => {
 												<p className="w-full text-danger ">
 													Please read these instructions carefully before installing WatchWave.
 												</p>
-												<div className="w-full fr justify-start items-start gap-3">
+												<div className="w-full fr justify-start items-start gap-3 snap-start">
 													<div className="text-2xl fc w-14 font-bold border-2 border-secondary rounded-full aspect-square">
 														1
 													</div>
@@ -156,18 +158,21 @@ const Download = () => {
 														<video src="/dl/Step1.mp4" className="rounded-xl w-full" autoPlay loop />
 													</div>
 												</div>
-												<div className="w-full fr justify-start items-start gap-3">
+												<div className="w-full fr justify-start items-start gap-3 snap-start">
 													<div className="text-2xl fc w-14 font-bold border-2 border-secondary rounded-full aspect-square">
 														2
 													</div>
 													<div className="w-full fc gap-2 items-start">
-														<p className="text-xl">Download the app</p>
-														<p>Open Terminal and enter the following command to download the app. </p>
-														<code className="p-1 bg-default-200 border-2 rounded-xl border-default-200 my-4">
+														<p className="text-xl">Sign the app</p>
+														<p className="text-base text-foreground-400">
+															Open Terminal and enter the following command to download the app. When it asks for the
+															password, enter the password you use to login to your Mac.
+														</p>
+														<Code className="my-4">
 															<p>sudo spctl --global-disable</p>
 															<p>xattr -cr /Applications/WatchWave.app</p>
 															<p>sudo spctl --global-enable</p>
-														</code>
+														</Code>
 														<video src="/dl/Step2.mp4" className="rounded-xl w-full" autoPlay loop />
 													</div>
 												</div>
@@ -203,7 +208,6 @@ const Download = () => {
 								<motion.button
 									initial={{ opacity: 0, y: 100 }}
 									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: 100 }}
 									transition={{ duration: 1, delay: 1 }}
 									className={`px-4 py-2 rounded-2xl bg-transparent border-secondary border-2 fr gap-2 sm:text-xl md:text-2xl font-black hover:bg-secondary transition-colors hover:text-white outline-none`}
 								>
@@ -211,8 +215,8 @@ const Download = () => {
 								</motion.button>
 							</DropdownTrigger>
 							<DropdownMenu aria-label="Static Actions" disabledKeys={['win', 'linux']}>
-								<DropdownItem key="mac">
-									<div className="fr justify-start gap-2" onClick={onOpen}>
+								<DropdownItem key="mac" onClick={onOpen}>
+									<div className="fr justify-start gap-2">
 										<FaApple /> Download for MacOS
 									</div>
 								</DropdownItem>
@@ -258,8 +262,7 @@ const Download = () => {
 							filter: 'blur(0px)',
 							transform: 'rotateX(var(--rotateX)) matrix(1, 0, 0, 1, 0, 0)',
 						}}
-						exit={{ opacity: 0, y: 100, filter: 'blur(20px)' }}
-						transition={{ duration: 1, delay: 2.5 }}
+						transition={{ duration: 1, delay: 1.5 }}
 						src="/App.png"
 						alt="App"
 						className="w-full h-full rounded-xl app-img shadow-2xl object-cover"
