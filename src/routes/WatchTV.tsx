@@ -132,6 +132,16 @@ const WatchTV = () => {
 	}, [season]);
 
 	useEffect(() => {
+		if (localStorage.track)
+			JSON.parse(localStorage.track)?.tv?.forEach((tv: { id: string; episode: number; season: number }) => {
+				if (tv.id === id) {
+					setEpisode(tv.episode);
+					setSeason(tv.season);
+				}
+			});
+	}, []);
+
+	useEffect(() => {
 		if (episode !== null) {
 			// show name, episode number and then name
 			const track = `${result?.name || result?.original_name}: Ep${episode}: ${seasons[`Season ${season}`]?.episodes[episode - 1].name}`;
@@ -259,6 +269,10 @@ const WatchTV = () => {
 								opacity: 0,
 								filter: 'blur(10px)',
 							}}
+							onAnimationComplete={() => {
+								const el = document.getElementById(`${episode} ${season}`);
+								if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+							}}
 							viewport={{ once: true }}
 						>
 							{Object.keys(seasons)
@@ -279,9 +293,38 @@ const WatchTV = () => {
 											return (
 												<div
 													key={episode_number}
+													id={`${episode_number} ${season_number}`}
 													onClick={() => {
 														setEpisode(episode_number);
 														setSeason(season_number);
+
+														const restofData = localStorage.track && JSON.parse(localStorage.track);
+														const tvData = restofData?.tv;
+
+														// set current episode and season in local storage
+														if (restofData) {
+															localStorage.track = JSON.stringify({
+																...restofData,
+																tv: [
+																	{
+																		id: id,
+																		season: season_number,
+																		episode: episode_number,
+																	},
+																	...(tvData?.filter((tv: { id: string }) => tv.id !== id) ?? []),
+																],
+															});
+														} else {
+															localStorage.track = JSON.stringify({
+																tv: [
+																	{
+																		id: id,
+																		season: season_number,
+																		episode: episode_number,
+																	},
+																],
+															});
+														}
 													}}
 													// add bg red if its the current episode
 													className={`fr justify-start px-5 py-3 border-y-[1px] border-foreground-200 transition-all hover:bg-default-200 cursor-pointer ${

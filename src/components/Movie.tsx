@@ -29,7 +29,10 @@ const Movie = ({ result, disabled, className, type }: { result: MovieProps; disa
 
 	return (
 		<motion.div
-			className={`${twMerge('w-full h-full max-w-[250px] mx-auto group sm:hover:z-10 relative text-default-foreground', className)}`}
+			className={`${twMerge(
+				'w-full h-full max-w-[250px] mx-auto group sm:hover:z-10 relative text-default-foreground transform-gpu',
+				className
+			)}`}
 			whileHover={{ scale: document.body.clientWidth > 768 ? 1.05 : 1 }}
 			viewport={{ once: true }}
 			variants={child}
@@ -53,6 +56,7 @@ const Movie = ({ result, disabled, className, type }: { result: MovieProps; disa
 					<div className="relative fc group w-full">
 						{result.poster_path ? (
 							<img
+								loading="lazy"
 								className="rounded-xl aspect-[2/3] w-full object-cover shadow-2xl max-w-[250px]"
 								src={`https://image.tmdb.org/t/p/w400${result.poster_path}`}
 								alt={result.title}

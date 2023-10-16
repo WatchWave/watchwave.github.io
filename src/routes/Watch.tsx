@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 import toast from 'react-hot-toast';
 import useRunOnce from '@/hooks/useRunOnce';
 import Review from '@/components/Review';
-import Movie from '@/components/Movie';
+import Movie from '@/components/Movie.1';
 import { AiOutlineCloseCircle } from 'react-icons/ai';
 import {
 	genresProps,

@@ -212,11 +212,13 @@ const Search = () => {
 			)}
 			{!query && (
 				<>
-					{popular?.results.length !== 0 && <Slider type="movie" title="Popular" results={popular?.results} />}
+					<AnimatePresence>
+						{popular?.results.length !== 0 && <Slider type="movie" title="Popular" results={popular?.results} />}
 
-					{topRated?.results.length !== 0 && <Slider type="movie" title="Top Rated" results={topRated?.results} />}
+						{topRated?.results.length !== 0 && <Slider type="movie" title="Top Rated" results={topRated?.results} />}
 
-					{upcoming?.results.length !== 0 && <Slider type="movie" title="Upcoming" results={upcoming?.results} />}
+						{upcoming?.results.length !== 0 && <Slider type="movie" title="Upcoming" results={upcoming?.results} />}
+					</AnimatePresence>
 				</>
 			)}
 			<Footer />
