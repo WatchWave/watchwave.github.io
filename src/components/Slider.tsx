@@ -17,7 +17,7 @@ const Slider = ({ results, title, type }: { results: suggestionProps[] | undefin
 
 				<motion.div variants={container} initial="hidden" animate="visible" className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-5">
 					{results?.slice(0, 10).map((result: suggestionProps) => (
-						<Movie type={type} key={result.id} result={result} />
+						<Movie type={type} key={`${result.id}${result.title}${title}`} result={result} />
 					))}
 				</motion.div>
 			</div>

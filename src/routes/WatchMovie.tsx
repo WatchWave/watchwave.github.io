@@ -12,6 +12,7 @@ import { AiOutlineCloseCircle } from 'react-icons/ai';
 import Video from '@/components/Video';
 import { Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from '@nextui-org/react';
 import ReactGA from 'react-ga4';
+import $ from 'jquery';
 
 import {
 	genresProps,
@@ -40,6 +41,7 @@ const options = {
 
 const WatchMovie = () => {
 	const main = useRef<HTMLDivElement>(null);
+	const iframe = useRef<HTMLIFrameElement>(null);
 	const { id } = useParams<{ id: string }>();
 
 	const [result, setResult] = useState<detailsProps | null>(null);

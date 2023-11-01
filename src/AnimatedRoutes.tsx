@@ -20,7 +20,7 @@ const AnimatedRoutes = () => {
 			<div className="sm:block hidden">
 				<Toaster />
 			</div>
-			{localStorage.warningCleared === undefined || localStorage.warningCleared === 'false' ? <Warning /> : null}
+			<Warning />
 			<AnimatePresence mode="wait">
 				<Routes key={location.pathname} location={location}>
 					<Route path="/" element={<Home />} errorElement={<Error />} />

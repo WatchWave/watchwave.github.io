@@ -12,6 +12,8 @@ interface AppState {
 	setSeason: (season: number | null) => void;
 	popups: boolean;
 	setPopups: (popups: boolean) => void;
+	warningCleared: boolean;
+	setWarningCleared: (warningCleared: boolean) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -25,4 +27,6 @@ export const useStore = create<AppState>((set) => ({
 	setSeason: (season) => set({ season }),
 	popups: true,
 	setPopups: (popups) => set({ popups }),
+	warningCleared: false,
+	setWarningCleared: (warningCleared: boolean) => set({ warningCleared }),
 }));

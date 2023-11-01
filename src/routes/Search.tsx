@@ -183,9 +183,9 @@ const Search = () => {
 									{filteredItems &&
 										filteredItems.map((result: SearchResultProps | castProps) => {
 											return result.media_type.includes('t') || result.media_type.includes('m') ? (
-												<Movie key={result.id + result.media_type} result={result} />
+												<Movie key={`${result.id}${result.media_type}`} result={result} />
 											) : (
-												<Person key={result.id + result.media_type} result={result} />
+												<Person key={`${result.id}${result.adult}`} result={result} />
 											);
 										})}
 								</AnimatePresence>

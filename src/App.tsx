@@ -12,6 +12,9 @@ const App = () => {
 			document.documentElement.classList.remove('dark');
 		}
 
+		if (localStorage.warningCleared === undefined) {
+			localStorage.warningCleared = 'false';
+		}
 		if (localStorage.stealthMode === undefined) localStorage.stealthMode = 'true';
 		if (localStorage.popups === undefined) localStorage.popups = 'true';
 		if (localStorage.stealthModeURL === undefined) localStorage.stealthModeURL = 'https://www.google.com/';
@@ -32,7 +35,13 @@ const App = () => {
 		};
 
 		const failSafe = (e: KeyboardEvent) => {
-			if (e.shiftKey && e.key === 'D' && localStorage.stealthMode === 'true') {
+			if (
+				e.shiftKey &&
+				e.key === 'D' &&
+				localStorage.stealthMode === 'true' &&
+				document.activeElement?.tagName !== 'INPUT' &&
+				document.activeElement?.tagName !== 'TEXTAREA'
+			) {
 				window.open(localStorage.stealthModeURL);
 				document.title = 'Google Docs';
 				// edit favicon
