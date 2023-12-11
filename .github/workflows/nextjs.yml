@@ -47,7 +47,10 @@ jobs:
               uses: actions/setup-node@v3
               with:
                   node-version: 'lts/*'
-                  cache: ${{ github.workspace }}/WatchWave v2/package-lock.json
+                  # the package-lock is in WatchWave v2
+                  cache: 'npm'
+                  cache-dependency-path: |
+                      ${{ github.workspace }}/WatchWave v2/package-lock.json
             - name: Setup Pages
               uses: actions/configure-pages@v3
             - name: Restore cache
