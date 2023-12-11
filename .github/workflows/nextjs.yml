@@ -47,7 +47,7 @@ jobs:
               uses: actions/setup-node@v3
               with:
                   node-version: 'lts/*'
-                  cache: ${{ steps.detect-package-manager.outputs.manager }}
+                  cache: ${{ github.workspace }}/WatchWave v2/package.json
             - name: Setup Pages
               uses: actions/configure-pages@v3
             - name: Restore cache
