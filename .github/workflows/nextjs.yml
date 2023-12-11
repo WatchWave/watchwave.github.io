@@ -34,7 +34,7 @@ jobs:
             - name: Detect package manager
               id: detect-package-manager
               run: |
-                  if [ -f "${{ github.workspace }}" ]; then
+                  if [ -f "${{ github.workspace }}/WatchWave v2/package.json" ]; then
                     echo "manager=npm" >> $GITHUB_OUTPUT
                     echo "command=ci" >> $GITHUB_OUTPUT
                     echo "runner=npx --no-install" >> $GITHUB_OUTPUT
