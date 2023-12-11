@@ -66,6 +66,8 @@ jobs:
             - name: Install dependencies
               run: cd ${{ github.workspace }}/WatchWave\ v2 && npm ci
             - name: Build with Next.js
+              env:
+                  NEXT_PUBLIC_TOKEN: ${{ secrets.NEXT_PUBLIC_TOKEN }}
               run: cd ${{ github.workspace }}/WatchWave\ v2 && npm run build
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v1
