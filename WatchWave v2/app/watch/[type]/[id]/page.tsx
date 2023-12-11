@@ -3,7 +3,7 @@ import { Metadata, ResolvingMetadata } from "next";
 import Main from "./Main";
 
 type Props = {
-  params: { type: string; id: string };
+  params: { type: string; id: number };
 };
 
 export async function generateMetadata(
