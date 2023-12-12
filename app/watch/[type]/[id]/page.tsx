@@ -6,25 +6,6 @@ type Props = {
 	params: { type: string; id: number };
 };
 
-export async function getStaticPaths() {
-	return {
-		paths: [], // no pre-rendered pages
-		fallback: 'blocking', // generate pages on-demand
-	};
-}
-
-export async function getStaticProps({ params }) {
-	// Fetch data based on `id` and `type`
-	const data = await fetchData(params.id, params.type);
-
-	return {
-		props: {
-			data,
-		},
-		revalidate: 60, // regenerate the page every 60 seconds
-	};
-}
-
 export async function generateMetadata({ params }: Props, parent: ResolvingMetadata): Promise<Metadata> {
 	// read route params
 	const id = params.id;
