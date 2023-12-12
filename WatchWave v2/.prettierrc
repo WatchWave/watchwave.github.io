@@ -1,8 +1,0 @@
-{
-  "plugins": ["prettier-plugin-tailwindcss"],
-  "prettier.printWidth": 150,
-  "prettier.tabWidth": 4,
-  "prettier.useTabs": true,
-  "prettier.singleQuote": true,
-  "prettier.proseWrap": "never"
-}
