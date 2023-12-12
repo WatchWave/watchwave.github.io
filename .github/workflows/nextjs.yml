@@ -72,7 +72,8 @@ jobs:
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v1
               with:
-                  path: ${{ github.workspace }}/WatchWave\ v2/out/
+                  artifact-name: build
+                  path: ${{ github.workspace }}/WatchWave\ v2/.next
 
     # Deployment job
     deploy:
