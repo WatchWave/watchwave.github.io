@@ -1,6 +1,7 @@
 import options from '@/lib/options';
 import { Metadata, ResolvingMetadata } from 'next';
 import Main from './Main';
+import { cookies } from 'next/headers';
 
 type Props = {
 	params: { type: string; id: number };
@@ -10,6 +11,7 @@ export async function generateMetadata({ params }: Props, parent: ResolvingMetad
 	// read route params
 	const id = params.id;
 	const type = params.type;
+	cookies();
 
 	// fetch data
 	const content = await fetch(`https://api.themoviedb.org/3/${type}/${id}?language=en-US`, options).then((res) => res.json());
@@ -45,6 +47,6 @@ export async function generateMetadata({ params }: Props, parent: ResolvingMetad
 	};
 }
 
-export default function Page({ params }: Props) {
-	return <Main params={params} />;
+export default function Page() {
+	return <Main />;
 }
