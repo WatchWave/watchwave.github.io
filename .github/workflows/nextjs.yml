@@ -21,15 +21,12 @@ permissions:
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
     group: 'pages'
-    cancel-in-progress: false
+    cancel-in-progress: true
 
 jobs:
     # Build job
     build:
         runs-on: ubuntu-latest
-        defaults:
-            run:
-                working-directory: ./WatchWave v2
         steps:
             - name: Checkout
               uses: actions/checkout@v4
